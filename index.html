@@ -789,10 +789,10 @@ function uploadImg(n,inp){
     if(piEl){piEl.src=ev.target.result;}
     if(uzEl){uzEl.style.display='none';}
     // Analisi AI solo sul fronte (a o 1,2,3 senza lettera)
-    const base=String(n).replace(/[ab]/,'');
+    const base=parseInt(String(n).replace(/[ab]/g,''));
     const side=String(n).slice(-1);
     if(side!=='b'){
-      // fronte: avvia analisi
+      // fronte: avvia analisi con numero intero
       analyzeImg(base);
     }
   };
@@ -811,23 +811,24 @@ function clearImg(n){
 function showErr(n,msg){const e=document.getElementById('em'+n);if(e){e.textContent=msg;e.style.display='block';}}
 
 async function analyzeImg(n){
+  // Converti n in numero intero per compatibilità con dizionari
+  const ni=parseInt(n);
   // Usa il fronte (na) se disponibile, altrimenti il singolo
-  const img=imgs[n+'a']||imgs[n];
-  document.getElementById('em'+n).style.display='none';
-  document.getElementById('an'+n).style.display='block';
-  if(!img){document.getElementById('an'+n).style.display='none';return;}
+  const img=imgs[ni+'a']||imgs[String(ni)+'a']||imgs[ni]||imgs[String(ni)];
+  document.getElementById('em'+ni).style.display='none';
+  document.getElementById('an'+ni).style.display='block';
+  if(!img){document.getElementById('an'+ni).style.display='none';return;}
   const prompts={
     1:'Estrai dati anagrafici e documento da questa immagine. Rispondi SOLO con JSON valido senza markdown:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
     2:'Estrai dati natante da questo documento. Rispondi SOLO con JSON valido senza markdown:\n{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
     3:'Estrai dati intestatario/proprietario. Rispondi SOLO con JSON valido senza markdown:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
   };
-  const msgs={1:['Riconoscimento documento...','Estrazione dati anagrafici...','Lettura documento ID...'],
+    const msgs={1:['Riconoscimento documento...','Estrazione dati anagrafici...','Lettura documento ID...'],
                2:['Analisi documento bordo...','Estrazione dati natante...','Lettura dati motore...'],
                3:['Analisi documento obbligato...','Estrazione dati intestatario...']};
   let mi=0;
-  const t=setInterval(()=>{const el=document.getElementById('at'+n);if(el)el.textContent=msgs[n][Math.min(mi++,msgs[n].length-1)];},1500);
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+  const t=setInterval(()=>{const el=document.getElementById('at'+ni);if(el)el.textContent=msgs[ni][Math.min(mi++,msgs[ni].length-1)];},1500);
+  try{   const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
@@ -848,12 +849,12 @@ async function analyzeImg(n){
     if(!res.ok)throw new Error(data.error?.message||'Errore API '+res.status);
     const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
     const d=JSON.parse(raw);
-    fillBlock(n,d);
+    fillBlock(ni,d);
   }catch(e){
     clearInterval(t);
-    showErr(n,'⚠️ '+e.message);
+    showErr(ni,'⚠️ '+e.message);
   }finally{
-    document.getElementById('an'+n).style.display='none';
+    document.getElementById('an'+ni).style.display='none';
   }
 }
 

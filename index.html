@@ -522,14 +522,21 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
       <div class="fg"><label>-30% (5 gg)</label><input class="fi" id="vr30" placeholder="—"></div>
       <div class="fg"><label>Pagamento</label><input class="fi" id="vpag" placeholder="F23"></div>
       <div class="fg"><label>Scritti difensivi</label><input class="fi" id="vdif" placeholder="CP Olbia"></div>
-      <div class="fg full"><label>Verbalizzanti</label><input class="fi" id="vvrb" placeholder="—"></div>
-      <div class="fg"><label>Data</label><input class="fi" id="vdat" placeholder="GG/MM/AAAA"></div>
-      <div class="fg"><label>Ora</label><input class="fi" id="vora" placeholder="HH:MM"></div>
-      <div class="fg"><label>Sezione</label><input class="fi" id="vsez" placeholder="—"></div>
-      <div class="fg"><label>Mezzo CP</label><input class="fi" id="vmez" placeholder="—"></div>
-      <div class="fg full"><label>Località</label><input class="fi" id="vloc" placeholder="—"></div>
-      <div class="fg"><label>Lat. N</label><input class="fi" id="vlat" placeholder="—"></div>
-      <div class="fg"><label>Long. E</label><input class="fi" id="vlon" placeholder="—"></div>
+      <div class="full" style="background:#f0f8f0;border:1px solid #a8dfb8;border-radius:8px;padding:12px;margin-bottom:4px">
+        <div style="font-size:10px;font-weight:700;color:#1A7A4A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Dati acquisiti dal blocco Missione — modificabili se necessario</div>
+        <div class="g2">
+          <div class="fg full"><label>Verbalizzanti</label><input class="fi ok" id="vvrb" placeholder="Dal blocco Missione"></div>
+          <div class="fg"><label>Data</label><input class="fi ok" id="vdat" placeholder="Automatica"></div>
+          <div class="fg"><label>Ora</label><input class="fi ok" id="vora" placeholder="Automatica"></div>
+          <div class="fg"><label>Sezione / Ufficio</label><input class="fi ok" id="vsez" placeholder="Dal blocco Missione"></div>
+          <div class="fg"><label>Mezzo CP</label><input class="fi ok" id="vmez" placeholder="Dal blocco Missione"></div>
+          <div class="fg full"><label>Località (da GPS)</label><input class="fi ok" id="vloc" placeholder="Dal GPS"></div>
+          <div class="fg"><label>Lat. N</label><input class="fi ok" id="vlat" placeholder="Dal GPS"></div>
+          <div class="fg"><label>Long. E</label><input class="fi ok" id="vlon" placeholder="Dal GPS"></div>
+        </div>
+        <button onclick="getGPSAndUpdate()" style="margin-top:6px;padding:7px 14px;background:#0B2545;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">📡 Aggiorna GPS</button>
+        <span id="gps-b4-status" style="font-size:11px;color:#1A7A4A;margin-left:8px"></span>
+      </div>
     </div>
 
     <div class="sec">Descrizione dei fatti</div>
@@ -637,6 +644,8 @@ function doLogin() {
     if(v1&&!v1.value) v1.value=u;
     startClock();
     goTo(0);
+    // Sync immediata all'avvio
+    setTimeout(syncMission, 100);
   } else {
     err.style.display='block';
     err.innerHTML='❌ Credenziali errate<br><small>Utente: guardia1 · Password: cp.olbia2024</small>';
@@ -717,6 +726,14 @@ function getGPS(){
     ok.textContent='📍 '+gpsLoc+' — '+gpsLat+' / '+gpsLon+' (±'+ac+'m)';
     btn.textContent='✅ GPS acquisito — Riaggiorna';
     btn.style.background='#1A7A4A';
+    // Aggiorna SUBITO i campi nel blocco 4 (sovrascrive sempre)
+    const vloc=document.getElementById('vloc');if(vloc){vloc.value=gpsLoc;vloc.classList.add('ok');}
+    const vlat=document.getElementById('vlat');if(vlat){vlat.value=gpsLat;vlat.classList.add('ok');}
+    const vlon=document.getElementById('vlon');if(vlon){vlon.value=gpsLon;vlon.classList.add('ok');}
+    // Aggiorna anche i campi nascosti missione
+    const mloc=document.getElementById('m_loc');if(mloc)mloc.value=gpsLoc;
+    const mlat=document.getElementById('m_lat');if(mlat)mlat.value=gpsLat;
+    const mlon=document.getElementById('m_lon');if(mlon)mlon.value=gpsLon;
   },err=>{
     btn.textContent='📡 Acquisisci posizione GPS';
     const m={1:'Accesso negato. Abilita posizione nelle impostazioni.',2:'Posizione non disponibile.',3:'Timeout GPS.'};
@@ -750,17 +767,25 @@ function syncMission(){
   const now=new Date();
   const data=now.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
   const ora=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  // Verbalizzanti: aggiorna SEMPRE (si aggiornano in tempo reale)
-  const vvrb=document.getElementById('vvrb');
-  if(vvrb&&verb){vvrb.value=verb;vvrb.classList.add('ok');}
-  // Data/ora: aggiorna sempre
-  const vdat=document.getElementById('vdat');if(vdat){vdat.value=data;vdat.classList.add('ok');}
-  const vora=document.getElementById('vora');if(vora){vora.value=ora;vora.classList.add('ok');}
-  // GPS e unità: solo se vuoti
-  const map={vloc:gpsLoc,vlat:gpsLat,vlon:gpsLon,vsez:gv('msez'),vmez:gv('mmez')};
-  for(const[id,val] of Object.entries(map)){
+  const sez=gv('msez');
+  const mez=gv('mmez');
+
+  // Mappa completa: tutti i dati missione → tutti i campi del documento
+  // Sovrascrive sempre — sono dati ridondanti dalla missione
+  const always={
+    vvrb: verb,   // verbalizzanti
+    vdat: data,   // data
+    vora: ora,    // ora
+    vloc: gpsLoc, // località
+    vlat: gpsLat, // latitudine
+    vlon: gpsLon, // longitudine
+    vsez: sez,    // sezione/ufficio
+    vmez: mez,    // mezzo CP
+  };
+  for(const[id,val] of Object.entries(always)){
+    if(!val) continue;
     const e=document.getElementById(id);
-    if(e&&val&&!e.value){e.value=val;e.classList.add('ok');}
+    if(e){e.value=val;e.classList.add('ok');}
   }
 }
 
@@ -792,8 +817,11 @@ function uploadImg(n,inp){
     const base=parseInt(String(n).replace(/[ab]/g,''));
     const side=String(n).slice(-1);
     if(side!=='b'){
-      // fronte: avvia analisi con numero intero
+      // fronte: analisi completa
       analyzeImg(base);
+    } else {
+      // retro: analisi integrativa (riempie solo campi vuoti)
+      analyzeImgRetro(base, n);
     }
   };
   r.readAsDataURL(f);
@@ -859,6 +887,113 @@ async function analyzeImg(n){
 }
 
 function sf(id,v){const e=document.getElementById(id);if(e&&v){e.value=v;e.classList.add('ok');}}
+
+// Analisi retro documento — integra solo i campi ancora vuoti
+async function analyzeImgRetro(ni, imgKey){
+  const img=imgs[imgKey];
+  if(!img) return;
+  const an=document.getElementById('an'+ni);
+  const em=document.getElementById('em'+ni);
+  if(an) an.style.display='block';
+  if(em) em.style.display='none';
+
+  const prompts={
+    1:'Estrai dati anagrafici e documento da questa immagine (retro). Rispondi SOLO con JSON valido senza markdown:
+{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
+    2:'Estrai dati natante da questo documento (retro). Rispondi SOLO con JSON valido senza markdown:
+{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
+    3:'Estrai dati intestatario/proprietario (retro). Rispondi SOLO con JSON valido senza markdown:
+{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
+  };
+
+  // Mappa campi per blocco
+  const fieldMap={
+    1:['tcog','tnom','tnata','tnatd','tres','tvia','tciv','tcf','tdnum','tdil','tdda'],
+    2:['ntar','nnom','nmar','nsta','nnmot','nmmot','nmat','npot','npor'],
+    3:['ocog','onom','onata','onatd','ores','ovia','ociv','opiv','odnum','odil','odda']
+  };
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':API_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:600,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:img.type,data:img.b64}},
+          {type:'text',text:prompts[ni]}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'Errore API');
+    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const d=JSON.parse(raw);
+
+    // Riempi SOLO i campi vuoti usando fillBlockEmpty
+    fillBlockEmpty(ni, d, fieldMap[ni]);
+
+  }catch(e){
+    if(em){em.textContent='⚠️ Retro: '+e.message;em.style.display='block';}
+  }finally{
+    if(an) an.style.display='none';
+  }
+}
+
+// Riempie solo i campi vuoti (non sovrascrive quelli già compilati)
+function fillBlockEmpty(n, d, fields){
+  if(n===1){
+    if(!gv('tcog')) sf('tcog',d.cog);
+    if(!gv('tnom')) sf('tnom',d.nom);
+    if(!gv('tnata')) sf('tnata',d.nata);
+    if(!gv('tnatd')) sf('tnatd',d.natd);
+    if(!gv('tres')) sf('tres',d.res);
+    if(!gv('tvia')) sf('tvia',d.via);
+    if(!gv('tciv')) sf('tciv',d.civ);
+    if(!gv('tcf')) sf('tcf',d.cf);
+    if(!gv('tdnum')) sf('tdnum',d.dnum);
+    if(!gv('tdil')) sf('tdil',d.dil);
+    if(!gv('tdda')) sf('tdda',d.dda);
+    // Tipo documento solo se non selezionato
+    if(!document.querySelector('input[name=doc]:checked')&&d.dtype){
+      document.querySelectorAll('input[name=doc]').forEach(r=>{
+        if(d.dtype.toUpperCase().includes(r.value.toUpperCase().substring(0,3)))r.checked=true;
+      });
+    }
+  } else if(n===2){
+    if(!gv('ntar')) sf('ntar',d.tar);
+    if(!gv('nnom')) sf('nnom',d.nom);
+    if(!gv('nmar')) sf('nmar',d.mar);
+    if(!gv('nsta')) sf('nsta',d.sta);
+    if(!gv('nnmot')) sf('nnmot',d.nmot);
+    if(!gv('nmmot')) sf('nmmot',d.mmot);
+    if(!gv('nmat')) sf('nmat',d.mat);
+    if(!gv('npot')) sf('npot',d.pot);
+    if(!gv('npor')) sf('npor',d.por);
+    if(!document.querySelector('input[name=mot]:checked')&&d.tmot){
+      document.querySelectorAll('input[name=mot]').forEach(r=>{
+        if((d.tmot||'').includes(r.value))r.checked=true;
+      });
+    }
+  } else if(n===3){
+    if(!gv('ocog')) sf('ocog',d.cog);
+    if(!gv('onom')) sf('onom',d.nom);
+    if(!gv('onata')) sf('onata',d.nata);
+    if(!gv('onatd')) sf('onatd',d.natd);
+    if(!gv('ores')) sf('ores',d.res);
+    if(!gv('ovia')) sf('ovia',d.via);
+    if(!gv('ociv')) sf('ociv',d.civ);
+    if(!gv('opiv')) sf('opiv',d.piv);
+    if(!gv('odnum')) sf('odnum',d.dnum);
+    if(!gv('odil')) sf('odil',d.dil);
+    if(!gv('odda')) sf('odda',d.dda);
+  }
+}
 function fillBlock(n,d){
   if(n===1){sf('tcog',d.cog);sf('tnom',d.nom);sf('tnata',d.nata);sf('tnatd',d.natd);sf('tres',d.res);sf('tvia',d.via);sf('tciv',d.civ);sf('tcf',d.cf);sf('tdnum',d.dnum);sf('tdil',d.dil);sf('tdda',d.dda);
     if(d.dtype){document.querySelectorAll('input[name=doc]').forEach(r=>{if(d.dtype.toUpperCase().includes(r.value.toUpperCase().substring(0,3)))r.checked=true;});}}
@@ -1185,6 +1320,36 @@ function resetAll(){
   vl.querySelectorAll('[id^="vr"]').forEach(r=>{if(r.id!=='vr1'&&r.id!=='vr2')r.remove();});
   document.getElementById('vi2').value='';
   goTo(0);
+}
+
+// Aggiorna GPS e riempi subito i campi del blocco 4
+function getGPSAndUpdate(){
+  const status=document.getElementById('gps-b4-status');
+  if(status) status.textContent='📡 Acquisizione...';
+  if(!navigator.geolocation){alert('GPS non disponibile');return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const la=pos.coords.latitude,lo=pos.coords.longitude,ac=Math.round(pos.coords.accuracy);
+    const toDMS=d=>{const g=Math.floor(Math.abs(d)),mf=(Math.abs(d)-g)*60,m=Math.floor(mf),s=((mf-m)*60).toFixed(1);return g+'°'+m+"'"+s+'"';};
+    gpsLat=toDMS(la)+'N'; gpsLon=toDMS(lo)+'E';
+    gpsLoc='Zona nautica';
+    try{
+      const r=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+la+'&lon='+lo+'&format=json&accept-language=it');
+      const j=await r.json(); const a=j.address||{};
+      gpsLoc=a.sea||a.ocean||a.village||a.town||a.city||('Zona nautica ('+la.toFixed(3)+'°N '+lo.toFixed(3)+'°E)');
+    }catch(e){}
+    // Aggiorna campi blocco 4
+    const vloc=document.getElementById('vloc');if(vloc){vloc.value=gpsLoc;vloc.classList.add('ok');}
+    const vlat=document.getElementById('vlat');if(vlat){vlat.value=gpsLat;vlat.classList.add('ok');}
+    const vlon=document.getElementById('vlon');if(vlon){vlon.value=gpsLon;vlon.classList.add('ok');}
+    // Aggiorna anche blocco missione
+    const gpsok=document.getElementById('gpsok');
+    if(gpsok){gpsok.style.display='block';gpsok.textContent='📍 '+gpsLoc+' — '+gpsLat+' / '+gpsLon+' (±'+ac+'m)';}
+    const gpsbtn=document.getElementById('gpsbtn');
+    if(gpsbtn){gpsbtn.textContent='✅ GPS acquisito — Riaggiorna';gpsbtn.style.background='#1A7A4A';}
+    if(status) status.textContent='✅ '+gpsLoc+' (±'+ac+'m)';
+  },err=>{
+    if(status) status.textContent='❌ GPS non disponibile';
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
 
 // ═══════════════════════════════════════════════════════════

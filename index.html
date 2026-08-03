@@ -1060,112 +1060,57 @@ function resetAll(){
 // ═══════════════════════════════════════════════════════════
 // RICONOSCIMENTO VOCALE
 // ═══════════════════════════════════════════════════════════
-let recognition = null;
-let activeRecBtn = null;
+let recognition=null, activeRecBtn=null;
 
-function initSpeech() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return null;
-  const r = new SR();
-  r.lang = 'it-IT';
-  r.continuous = true;
-  r.interimResults = true;
-  return r;
-}
+function toggleMic(fieldId, btnId) {
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Usa Chrome su Android per la dettatura vocale.');return;}
+  const btn=document.getElementById(btnId);
+  const field=document.getElementById(fieldId);
+  const status=document.getElementById(btnId+'-status');
 
-function toggleMic(fieldId, btnId, fieldType) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    alert('Il tuo browser non supporta il riconoscimento vocale.
-Usa Chrome su Android per questa funzione.');
-    return;
+  if(recognition && activeRecBtn===btnId){
+    recognition.stop();return;
   }
+  if(recognition){recognition.stop();}
 
-  const btn = document.getElementById(btnId);
-  const field = document.getElementById(fieldId);
-  const status = document.getElementById(btnId + '-status');
+  const r=new SR();
+  r.lang='it-IT';r.continuous=true;r.interimResults=true;
+  recognition=r;activeRecBtn=btnId;
+  btn.textContent='⏹️ Stop — sto ascoltando...';
+  btn.className='mic-btn rec';
+  if(status)status.textContent='🔴 In ascolto — parla chiaramente';
 
-  // Se c'è già una registrazione attiva su un altro campo, fermala
-  if (recognition && activeRecBtn && activeRecBtn !== btnId) {
-    recognition.stop();
-    const oldBtn = document.getElementById(activeRecBtn);
-    if (oldBtn) { oldBtn.textContent = '🎤 Parla per dettare'; oldBtn.className = 'mic-btn idle'; }
-    const oldStatus = document.getElementById(activeRecBtn + '-status');
-    if (oldStatus) oldStatus.textContent = '';
-  }
+  let final=field.value||'';
 
-  // Se questo pulsante è già attivo, fermalo
-  if (recognition && activeRecBtn === btnId) {
-    recognition.stop();
-    recognition = null;
-    activeRecBtn = null;
-    btn.textContent = '🎤 Parla per dettare';
-    btn.className = 'mic-btn idle';
-    if (status) status.textContent = '';
-    return;
-  }
-
-  // Avvia nuova registrazione
-  recognition = initSpeech();
-  activeRecBtn = btnId;
-  btn.textContent = '⏹️ Stop — sto ascoltando...';
-  btn.className = 'mic-btn rec';
-  if (status) status.textContent = '🔴 Registrazione in corso — parla chiaramente';
-
-  let finalTranscript = field.tagName === 'TEXTAREA' ? field.value : field.value;
-  let lastInterim = '';
-
-  recognition.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        finalTranscript += (finalTranscript && !finalTranscript.endsWith(' ') ? ' ' : '') + t;
-      } else {
-        interim = t;
-      }
+  r.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=(final&&!final.endsWith(' ')?' ':'')+e.results[i][0].transcript;
+      else interim=e.results[i][0].transcript;
     }
-    // Mostra testo finale + interim in grigio
-    if (field.tagName === 'TEXTAREA') {
-      field.value = finalTranscript + (interim ? ' ' + interim : '');
-    } else {
-      field.value = finalTranscript + (interim ? ' ' + interim : '');
-    }
-    lastInterim = interim;
-    if (status) status.textContent = '🔴 In ascolto:  + interim + ';
+    field.value=final+(interim?' '+interim:'');
+    if(status)status.textContent='🔴 In ascolto: '+interim;
   };
 
-  recognition.onend = () => {
-    if (activeRecBtn === btnId) {
-      // Rimozione del testo interim quando finisce
-      if (field.tagName === 'TEXTAREA') {
-        field.value = finalTranscript;
-      } else {
-        field.value = finalTranscript;
-      }
-      btn.textContent = '🎤 Parla per dettare';
-      btn.className = 'mic-btn idle';
-      if (status) status.textContent = finalTranscript ? '✅ Testo acquisito' : '';
-      recognition = null;
-      activeRecBtn = null;
-    }
+  r.onend=()=>{
+    field.value=final;
+    btn.textContent='🎤 Parla per dettare';
+    btn.className='mic-btn idle';
+    if(status)status.textContent=final?'✅ Testo acquisito':'';
+    recognition=null;activeRecBtn=null;
   };
 
-  recognition.onerror = (e) => {
-    btn.textContent = '🎤 Parla per dettare';
-    btn.className = 'mic-btn idle';
-    const errMsg = {
-      'not-allowed': 'Microfono non autorizzato. Vai nelle impostazioni del browser e abilita il microfono.',
-      'no-speech': 'Nessun audio rilevato. Riprova.',
-      'network': 'Errore di rete. Verifica la connessione.',
-      'audio-capture': 'Microfono non trovato.'
-    };
-    if (status) status.textContent = '❌ ' + (errMsg[e.error] || 'Errore: ' + e.error);
-    recognition = null;
-    activeRecBtn = null;
+  r.onerror=e=>{
+    const m={'not-allowed':'Microfono non autorizzato. Abilitalo nelle impostazioni Chrome.',
+              'no-speech':'Nessun audio. Riprova.',
+              'network':'Errore rete.','audio-capture':'Microfono non trovato.'};
+    btn.textContent='🎤 Parla per dettare';btn.className='mic-btn idle';
+    if(status)status.textContent='❌ '+(m[e.error]||'Errore: '+e.error);
+    recognition=null;activeRecBtn=null;
   };
 
-  recognition.start();
+  r.start();
 }
 </script>
 </body>

@@ -74,7 +74,7 @@ textarea.fi{resize:vertical;min-height:80px}
 /* UPLOAD */
 .uz{border:2px dashed #c0d0e0;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#f4f8fc;position:relative;margin-bottom:12px}
 .uz:hover{border-color:#2B7CB5;background:#e8f4fc}
-.uz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10}
 .uz .ui{font-size:28px;margin-bottom:6px}
 .uz strong{display:block;color:#0B2545;font-size:13px;margin-bottom:3px}
 .uz p{color:#4a6a8a;font-size:11px}
@@ -147,6 +147,14 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
 .bpdf{flex:1;min-width:130px;padding:12px;border-radius:8px;border:none;background:#C0392B;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:48px}
 .bnew{width:100%;margin-top:10px;padding:10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#6a8aaa;font-size:12px;cursor:pointer;font-family:inherit}
 .bnew:hover{color:#0B2545;border-color:#0B2545}
+.mic-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:6px}
+.mic-btn.idle{background:#0B2545;color:#fff}
+.mic-btn.rec{background:#C0392B;color:#fff;animation:pulse .8s infinite}
+.mic-btn.idle:hover{opacity:.85}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.mic-wrap{display:flex;align-items:flex-start;gap:8px;margin-top:6px}
+.mic-wrap textarea{flex:1}
+
 </style>
 </head>
 <body>
@@ -233,11 +241,15 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
   <div class="cb">
     <div class="info">📷 Carica foto del documento — i dati vengono estratti automaticamente</div>
     <div class="em" id="em1"></div>
-    <div class="uz" id="uz1">
-      <input type="file" id="fi1" accept="image/*" onchange="uploadImg(1,this)">
+    <div class="uz" id="uz1" onclick="document.getElementById('fi1').click()">
+      <input type="file" id="fi1" accept="image/*" capture="environment" onchange="uploadImg(1,this)" style="display:none">
       <div class="ui">📷</div>
-      <strong>Foto documento trasgressore</strong>
+      <strong>Tocca per fotografare il documento</strong>
       <p>C.I. · Patente · Tessera MM · Passaporto · Libretto nav.</p>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button onclick="event.stopPropagation();document.getElementById('fi1').removeAttribute('capture');document.getElementById('fi1').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
+        <button onclick="event.stopPropagation();document.getElementById('fi1').setAttribute('capture','environment');document.getElementById('fi1').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+      </div>
     </div>
     <div class="pv" id="pv1">
       <img id="pi1" src="" alt="">
@@ -295,11 +307,15 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
   <div class="cb">
     <div class="info">📷 Fotografa licenza di navigazione o certificato di stazza</div>
     <div class="em" id="em2"></div>
-    <div class="uz" id="uz2">
-      <input type="file" id="fi2" accept="image/*" onchange="uploadImg(2,this)">
+    <div class="uz" id="uz2" onclick="document.getElementById('fi2').click()">
+      <input type="file" id="fi2" accept="image/*" capture="environment" onchange="uploadImg(2,this)" style="display:none">
       <div class="ui">🚢</div>
-      <strong>Foto documento natante</strong>
+      <strong>Tocca per fotografare il documento</strong>
       <p>Licenza di navigazione · Certificato di stazza · Libretto motore</p>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button onclick="event.stopPropagation();document.getElementById('fi2').removeAttribute('capture');document.getElementById('fi2').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
+        <button onclick="event.stopPropagation();document.getElementById('fi2').setAttribute('capture','environment');document.getElementById('fi2').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+      </div>
     </div>
     <div class="pv" id="pv2">
       <img id="pi2" src="" alt="">
@@ -344,11 +360,15 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <div class="em" id="em3"></div>
     <label class="sac"><input type="checkbox" id="samecb" onchange="toggleSame(this.checked)"> Coincide con il trasgressore — copia dati automaticamente</label>
     <div id="obarea">
-      <div class="uz" id="uz3">
-        <input type="file" id="fi3" accept="image/*" onchange="uploadImg(3,this)">
+      <div class="uz" id="uz3" onclick="document.getElementById('fi3').click()">
+        <input type="file" id="fi3" accept="image/*" capture="environment" onchange="uploadImg(3,this)" style="display:none">
         <div class="ui">🪪</div>
-        <strong>Foto documento obbligato</strong>
+        <strong>Tocca per fotografare il documento</strong>
         <p>C.I. · Visura camerale · Documento identità</p>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button onclick="event.stopPropagation();document.getElementById('fi3').removeAttribute('capture');document.getElementById('fi3').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
+          <button onclick="event.stopPropagation();document.getElementById('fi3').setAttribute('capture','environment');document.getElementById('fi3').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+        </div>
       </div>
       <div class="pv" id="pv3">
         <img id="pi3" src="" alt="">
@@ -451,7 +471,11 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     </div>
 
     <div class="sec">Descrizione dei fatti</div>
-    <textarea class="fi" id="vfat" placeholder="Descrizione dettagliata dell'accertamento..."></textarea>
+    <div class="mic-wrap">
+      <textarea class="fi" id="vfat" placeholder="Descrizione dettagliata dell'accertamento..." rows="5"></textarea>
+    </div>
+    <button class="mic-btn idle" id="mic-fat" onclick="toggleMic('vfat','mic-fat')">🎤 Parla per dettare</button>
+    <div style="font-size:11px;color:#6a8aaa;margin-top:4px" id="mic-fat-status"></div>
 
     <div class="sec" style="margin-top:10px">Dichiarazione trasgressore</div>
     <div class="cr">
@@ -459,6 +483,7 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
       <label class="ci"><input type="radio" name="dic" value="ALTRO"> Altra dichiarazione</label>
     </div>
     <input class="fi" id="vdic" placeholder="Testo dichiarazione (se non NULLA)" style="margin-top:8px">
+    <button class="mic-btn idle" id="mic-dic" onclick="toggleMic('vdic','mic-dic','input')">🎤 Parla</button>
 
     <div class="br">
       <button class="bback" onclick="goTo(3)">← Indietro</button>
@@ -1030,6 +1055,117 @@ function resetAll(){
   vl.querySelectorAll('[id^="vr"]').forEach(r=>{if(r.id!=='vr1'&&r.id!=='vr2')r.remove();});
   document.getElementById('vi2').value='';
   goTo(0);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RICONOSCIMENTO VOCALE
+// ═══════════════════════════════════════════════════════════
+let recognition = null;
+let activeRecBtn = null;
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = 'it-IT';
+  r.continuous = true;
+  r.interimResults = true;
+  return r;
+}
+
+function toggleMic(fieldId, btnId, fieldType) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('Il tuo browser non supporta il riconoscimento vocale.
+Usa Chrome su Android per questa funzione.');
+    return;
+  }
+
+  const btn = document.getElementById(btnId);
+  const field = document.getElementById(fieldId);
+  const status = document.getElementById(btnId + '-status');
+
+  // Se c'è già una registrazione attiva su un altro campo, fermala
+  if (recognition && activeRecBtn && activeRecBtn !== btnId) {
+    recognition.stop();
+    const oldBtn = document.getElementById(activeRecBtn);
+    if (oldBtn) { oldBtn.textContent = '🎤 Parla per dettare'; oldBtn.className = 'mic-btn idle'; }
+    const oldStatus = document.getElementById(activeRecBtn + '-status');
+    if (oldStatus) oldStatus.textContent = '';
+  }
+
+  // Se questo pulsante è già attivo, fermalo
+  if (recognition && activeRecBtn === btnId) {
+    recognition.stop();
+    recognition = null;
+    activeRecBtn = null;
+    btn.textContent = '🎤 Parla per dettare';
+    btn.className = 'mic-btn idle';
+    if (status) status.textContent = '';
+    return;
+  }
+
+  // Avvia nuova registrazione
+  recognition = initSpeech();
+  activeRecBtn = btnId;
+  btn.textContent = '⏹️ Stop — sto ascoltando...';
+  btn.className = 'mic-btn rec';
+  if (status) status.textContent = '🔴 Registrazione in corso — parla chiaramente';
+
+  let finalTranscript = field.tagName === 'TEXTAREA' ? field.value : field.value;
+  let lastInterim = '';
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        finalTranscript += (finalTranscript && !finalTranscript.endsWith(' ') ? ' ' : '') + t;
+      } else {
+        interim = t;
+      }
+    }
+    // Mostra testo finale + interim in grigio
+    if (field.tagName === 'TEXTAREA') {
+      field.value = finalTranscript + (interim ? ' ' + interim : '');
+    } else {
+      field.value = finalTranscript + (interim ? ' ' + interim : '');
+    }
+    lastInterim = interim;
+    if (status) status.textContent = '🔴 In ascolto:  + interim + ';
+  };
+
+  recognition.onend = () => {
+    if (activeRecBtn === btnId) {
+      // Rimozione del testo interim quando finisce
+      if (field.tagName === 'TEXTAREA') {
+        field.value = finalTranscript;
+      } else {
+        field.value = finalTranscript;
+      }
+      btn.textContent = '🎤 Parla per dettare';
+      btn.className = 'mic-btn idle';
+      if (status) status.textContent = finalTranscript ? '✅ Testo acquisito' : '';
+      recognition = null;
+      activeRecBtn = null;
+    }
+  };
+
+  recognition.onerror = (e) => {
+    btn.textContent = '🎤 Parla per dettare';
+    btn.className = 'mic-btn idle';
+    const errMsg = {
+      'not-allowed': 'Microfono non autorizzato. Vai nelle impostazioni del browser e abilita il microfono.',
+      'no-speech': 'Nessun audio rilevato. Riprova.',
+      'network': 'Errore di rete. Verifica la connessione.',
+      'audio-capture': 'Microfono non trovato.'
+    };
+    if (status) status.textContent = '❌ ' + (errMsg[e.error] || 'Errore: ' + e.error);
+    recognition = null;
+    activeRecBtn = null;
+  };
+
+  recognition.start();
 }
 </script>
 </body>

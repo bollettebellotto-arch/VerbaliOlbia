@@ -166,17 +166,15 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <div class="ltitle">Guardia Costiera Olbia</div>
     <div class="lsub">Accesso operatori autorizzati</div>
     <div class="lerr" id="lerr"></div>
-    <label class="llbl">Utente</label>
-    <input class="linp" type="text" id="luser" placeholder="es. guardia1" autocomplete="username">
     <label class="llbl">Password</label>
-    <input class="linp" type="password" id="lpass" placeholder="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <input class="linp" type="password" id="lpass" placeholder="Inserisci password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="lbtn" onclick="doLogin()">🔐 Accedi</button>
-    <div class="lhint">guardia1÷5 / cp.olbia2024 &nbsp;|&nbsp; admin / capitaneria2024</div>
+    <div class="lhint">Password: cp.olbia2024</div>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app" style="display:none;visibility:hidden">
 
 <div class="hdr">
   <div style="font-size:26px">⚓</div>
@@ -616,6 +614,12 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
 </div><!-- /app -->
 
 <script>
+// Cattura errori JS globali
+window.onerror = function(msg, src, line, col, err) {
+  console.error('JS Error:', msg, 'Riga:', line, 'Col:', col);
+  return false;
+};
+
 // ═══════════════════════════════════════════════════════════
 // CHIAVE API — già inserita
 // ═══════════════════════════════════════════════════════════
@@ -625,38 +629,39 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz4_Rnbl-xhgLDYVsDbl
 // ═══════════════════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════════════════
-const USERS = {
-  'guardia1':'cp.olbia2024','guardia2':'cp.olbia2024','guardia3':'cp.olbia2024',
-  'guardia4':'cp.olbia2024','guardia5':'cp.olbia2024','admin':'capitaneria2024'
-};
+
+
+// Password unica per tutti gli operatori
+const PASSWORD = 'cp.olbia2024';
+const PASSWORD_ADMIN = 'capitaneria2024';
 
 function doLogin() {
-  const u = (document.getElementById('luser').value||'').trim().toLowerCase();
-  const p = (document.getElementById('lpass').value||'');
-  const err = document.getElementById('lerr');
-  if (USERS[u] && (USERS[u]===p || USERS[u]===p.trim())) {
-    err.style.display='none';
-    document.getElementById('login').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('ubadge').style.display='flex';
-    document.getElementById('uname').textContent='👤 '+u;
-    const v1=document.getElementById('vi1');
-    if(v1&&!v1.value) v1.value=u;
-    startClock();
-    goTo(0);
-    // Sync immediata all'avvio
-    setTimeout(syncMission, 100);
-  } else {
-    err.style.display='block';
-    err.innerHTML='❌ Credenziali errate<br><small>Utente: guardia1 · Password: cp.olbia2024</small>';
-    document.getElementById('lpass').value='';
+  try {
+    const p = (document.getElementById('lpass').value||'').trim();
+    const err = document.getElementById('lerr');
+    if (p === PASSWORD || p === PASSWORD_ADMIN) {
+      err.style.display='none';
+      document.getElementById('login').style.display='none';
+      document.getElementById('app').style.display='block';document.getElementById('app').style.visibility='visible';
+      document.getElementById('ubadge').style.display='flex';
+      document.getElementById('uname').textContent='👤 Operatore';
+      startClock();
+      goTo(0);
+      setTimeout(syncMission, 200);
+    } else {
+      err.style.display='block';
+      err.innerHTML='❌ Password errata';
+      document.getElementById('lpass').value='';
+    }
+  } catch(e) {
+    alert('Errore login: '+e.message);
+    console.error('doLogin error:', e);
   }
 }
 
 function doLogout() {
   document.getElementById('login').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('luser').value='';
   document.getElementById('lpass').value='';
   resetAll();
 }
@@ -665,7 +670,7 @@ function doLogout() {
 // NAVIGAZIONE
 // ═══════════════════════════════════════════════════════════
 function goTo(n) {
-  syncMission();
+  try{syncMission();}catch(e){console.warn('syncMission:',e);}
   for(let i=0;i<=6;i++){
     const b=document.getElementById('b'+i);
     if(b) b.classList.toggle('active',i===n);
@@ -898,12 +903,9 @@ async function analyzeImgRetro(ni, imgKey){
   if(em) em.style.display='none';
 
   const prompts={
-    1:'Estrai dati anagrafici e documento da questa immagine (retro). Rispondi SOLO con JSON valido senza markdown:
-{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
-    2:'Estrai dati natante da questo documento (retro). Rispondi SOLO con JSON valido senza markdown:
-{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
-    3:'Estrai dati intestatario/proprietario (retro). Rispondi SOLO con JSON valido senza markdown:
-{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
+    1:'Estrai dati anagrafici e documento da questa immagine (retro). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
+    2:'Estrai dati natante da questo documento (retro). Rispondi SOLO con JSON valido senza markdown: {"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
+    3:'Estrai dati intestatario/proprietario (retro). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
   };
 
   // Mappa campi per blocco
@@ -1287,7 +1289,7 @@ function dlPDF(){
 function resetAll(){
   document.querySelectorAll('input.fi,select.fi,textarea.fi').forEach(e=>{e.value='';e.classList.remove('ok');});
   document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(e=>e.checked=false);
-  document.querySelector('input[name=dic][value=NULLA]').checked=true;
+  const dicNulla=document.querySelector('input[name=dic][value=NULLA]');if(dicNulla)dicNulla.checked=true;
   // Reset fronte e retro tutti i blocchi
   ['1a','1b','2a','2b','3a','3b'].forEach(n=>{
     delete imgs[n];

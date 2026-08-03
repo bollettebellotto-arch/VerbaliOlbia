@@ -184,6 +184,11 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <h1>Processo Verbale</h1>
     <p>Capitaneria di Porto · Guardia Costiera Olbia</p>
   </div>
+  <div style="display:flex;align-items:center;gap:6px;margin-right:8px">
+    <span style="color:#E8C97A;font-size:10px;white-space:nowrap">P.V. n°</span>
+    <input id="pvnum" type="text" placeholder="___/20__" maxlength="12"
+      style="width:80px;padding:5px 7px;border:1.5px solid #C9A84C;border-radius:6px;font-size:13px;font-weight:700;color:#0B2545;background:#fff;font-family:inherit;text-align:center">
+  </div>
   <div id="ubadge">
     <span id="uname"></span>
     <button class="lout" onclick="doLogout()">Esci</button>
@@ -241,20 +246,39 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
   <div class="cb">
     <div class="info">📷 Carica foto del documento — i dati vengono estratti automaticamente</div>
     <div class="em" id="em1"></div>
-    <div class="uz" id="uz1" onclick="document.getElementById('fi1').click()">
-      <input type="file" id="fi1" accept="image/*" capture="environment" onchange="uploadImg(1,this)" style="display:none">
-      <div class="ui">📷</div>
-      <strong>Tocca per fotografare il documento</strong>
-      <p>C.I. · Patente · Tessera MM · Passaporto · Libretto nav.</p>
-      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button onclick="event.stopPropagation();document.getElementById('fi1').removeAttribute('capture');document.getElementById('fi1').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
-        <button onclick="event.stopPropagation();document.getElementById('fi1').setAttribute('capture','environment');document.getElementById('fi1').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FRONTE</div>
+        <div class="uz" id="uz1a" onclick="triggerFile('fi1a')">
+          <input type="file" id="fi1a" accept="image/*" onchange="uploadImg('1a',this)" style="display:none">
+          <div class="ui" style="font-size:22px">📷</div>
+          <p style="font-size:11px">Fronte documento</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi1a',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi1a',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv1a" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi1a" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImg('1a')" style="text-align:center">✕ Rimuovi</span>
+        </div>
       </div>
-    </div>
-    <div class="pv" id="pv1">
-      <img id="pi1" src="" alt="">
-      <div class="pvn" id="pn1"></div>
-      <span class="pvc" onclick="clearImg(1)">✕ Cambia</span>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">RETRO</div>
+        <div class="uz" id="uz1b" onclick="triggerFile('fi1b')">
+          <input type="file" id="fi1b" accept="image/*" onchange="uploadImg('1b',this)" style="display:none">
+          <div class="ui" style="font-size:22px">📷</div>
+          <p style="font-size:11px">Retro documento</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi1b',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi1b',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv1b" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi1b" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImg('1b')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
     </div>
     <div class="an" id="an1"><div class="sp"></div><p id="at1">Analisi in corso...</p></div>
 
@@ -307,20 +331,39 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
   <div class="cb">
     <div class="info">📷 Fotografa licenza di navigazione o certificato di stazza</div>
     <div class="em" id="em2"></div>
-    <div class="uz" id="uz2" onclick="document.getElementById('fi2').click()">
-      <input type="file" id="fi2" accept="image/*" capture="environment" onchange="uploadImg(2,this)" style="display:none">
-      <div class="ui">🚢</div>
-      <strong>Tocca per fotografare il documento</strong>
-      <p>Licenza di navigazione · Certificato di stazza · Libretto motore</p>
-      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button onclick="event.stopPropagation();document.getElementById('fi2').removeAttribute('capture');document.getElementById('fi2').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
-        <button onclick="event.stopPropagation();document.getElementById('fi2').setAttribute('capture','environment');document.getElementById('fi2').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FRONTE</div>
+        <div class="uz" id="uz2a" onclick="triggerFile('fi2a')">
+          <input type="file" id="fi2a" accept="image/*" onchange="uploadImg('2a',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🚢</div>
+          <p style="font-size:11px">Fronte documento</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi2a',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi2a',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv2a" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi2a" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImg('2a')" style="text-align:center">✕ Rimuovi</span>
+        </div>
       </div>
-    </div>
-    <div class="pv" id="pv2">
-      <img id="pi2" src="" alt="">
-      <div class="pvn" id="pn2"></div>
-      <span class="pvc" onclick="clearImg(2)">✕ Cambia</span>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">RETRO</div>
+        <div class="uz" id="uz2b" onclick="triggerFile('fi2b')">
+          <input type="file" id="fi2b" accept="image/*" onchange="uploadImg('2b',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🚢</div>
+          <p style="font-size:11px">Retro documento</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi2b',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi2b',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv2b" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi2b" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImg('2b')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
     </div>
     <div class="an" id="an2"><div class="sp"></div><p id="at2">Analisi in corso...</p></div>
 
@@ -360,20 +403,39 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <div class="em" id="em3"></div>
     <label class="sac"><input type="checkbox" id="samecb" onchange="toggleSame(this.checked)"> Coincide con il trasgressore — copia dati automaticamente</label>
     <div id="obarea">
-      <div class="uz" id="uz3" onclick="document.getElementById('fi3').click()">
-        <input type="file" id="fi3" accept="image/*" capture="environment" onchange="uploadImg(3,this)" style="display:none">
-        <div class="ui">🪪</div>
-        <strong>Tocca per fotografare il documento</strong>
-        <p>C.I. · Visura camerale · Documento identità</p>
-        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <button onclick="event.stopPropagation();document.getElementById('fi3').removeAttribute('capture');document.getElementById('fi3').click()" style="padding:6px 12px;background:#fff;border:1.5px solid #2B7CB5;border-radius:6px;font-size:12px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️ Dalla galleria</button>
-          <button onclick="event.stopPropagation();document.getElementById('fi3').setAttribute('capture','environment');document.getElementById('fi3').click()" style="padding:6px 12px;background:#0B2545;border:none;border-radius:6px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit">📷 Fotocamera</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FRONTE</div>
+          <div class="uz" id="uz3a" onclick="triggerFile('fi3a')">
+            <input type="file" id="fi3a" accept="image/*" onchange="uploadImg('3a',this)" style="display:none">
+            <div class="ui" style="font-size:22px">🪪</div>
+            <p style="font-size:11px">Fronte documento</p>
+            <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+              <button onclick="event.stopPropagation();setCapture('fi3a',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+              <button onclick="event.stopPropagation();setCapture('fi3a',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+            </div>
+          </div>
+          <div class="pv" id="pv3a" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+            <img id="pi3a" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+            <span class="pvc" onclick="clearImg('3a')" style="text-align:center">✕ Rimuovi</span>
+          </div>
         </div>
-      </div>
-      <div class="pv" id="pv3">
-        <img id="pi3" src="" alt="">
-        <div class="pvn" id="pn3"></div>
-        <span class="pvc" onclick="clearImg(3)">✕ Cambia</span>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">RETRO</div>
+          <div class="uz" id="uz3b" onclick="triggerFile('fi3b')">
+            <input type="file" id="fi3b" accept="image/*" onchange="uploadImg('3b',this)" style="display:none">
+            <div class="ui" style="font-size:22px">🪪</div>
+            <p style="font-size:11px">Retro documento</p>
+            <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+              <button onclick="event.stopPropagation();setCapture('fi3b',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+              <button onclick="event.stopPropagation();setCapture('fi3b',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+            </div>
+          </div>
+          <div class="pv" id="pv3b" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+            <img id="pi3b" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+            <span class="pvc" onclick="clearImg('3b')" style="text-align:center">✕ Rimuovi</span>
+          </div>
+        </div>
       </div>
       <div class="an" id="an3"><div class="sp"></div><p id="at3">Analisi in corso...</p></div>
     </div>
@@ -534,6 +596,7 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
       <h4>✅ Processo Verbale compilato con firme</h4>
       <p>Scarica e stampa. Verifica i dati prima dell'uso ufficiale.</p>
     </div>
+    <div id="sheets-status" style="background:#e8f4fc;border:1px solid #a8d4f0;border-radius:8px;padding:10px 14px;font-size:12px;color:#1B3A6B;margin-bottom:12px;display:none"></div>
     <div class="dlrow">
       <button class="bword" onclick="dlWord()">📘 Scarica Word</button>
       <button class="bpdf" onclick="dlPDF()">📕 Scarica PDF</button>
@@ -550,6 +613,7 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
 // CHIAVE API — già inserita
 // ═══════════════════════════════════════════════════════════
 const API_KEY = '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';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz4_Rnbl-xhgLDYVsDbl02CED577BrQDdJgnNLsplcVMgxlYijA7oaiZERKuzHhHKy8/exec';
 
 // ═══════════════════════════════════════════════════════════
 // LOGIN
@@ -600,6 +664,17 @@ function goTo(n) {
     if(p){p.classList.remove('active','done');if(i<n)p.classList.add('done');else if(i===n)p.classList.add('active');}
   }
   if(n===5) initSig();
+  if(n===6) {
+    // Salva automaticamente su Google Sheets
+    const d=getData();
+    const ss=document.getElementById('sheets-status');
+    if(ss){ss.style.display='block';ss.textContent='⏳ Salvataggio su Google Sheets in corso...';}
+    saveToSheets(d).then(()=>{
+      if(ss){ss.textContent='✅ Verbale salvato su Google Sheets — '+new Date().toLocaleTimeString('it-IT');}
+    }).catch(()=>{
+      if(ss){ss.textContent='⚠️ Salvataggio Sheets non riuscito — scarica il documento comunque';}
+    });
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -675,7 +750,14 @@ function syncMission(){
   const now=new Date();
   const data=now.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
   const ora=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  const map={vvrb:verb,vdat:data,vora:ora,vloc:gpsLoc,vlat:gpsLat,vlon:gpsLon,vsez:gv('msez'),vmez:gv('mmez')};
+  // Verbalizzanti: aggiorna SEMPRE (si aggiornano in tempo reale)
+  const vvrb=document.getElementById('vvrb');
+  if(vvrb&&verb){vvrb.value=verb;vvrb.classList.add('ok');}
+  // Data/ora: aggiorna sempre
+  const vdat=document.getElementById('vdat');if(vdat){vdat.value=data;vdat.classList.add('ok');}
+  const vora=document.getElementById('vora');if(vora){vora.value=ora;vora.classList.add('ok');}
+  // GPS e unità: solo se vuoti
+  const map={vloc:gpsLoc,vlat:gpsLat,vlon:gpsLon,vsez:gv('msez'),vmez:gv('mmez')};
   for(const[id,val] of Object.entries(map)){
     const e=document.getElementById(id);
     if(e&&val&&!e.value){e.value=val;e.classList.add('ok');}
@@ -683,34 +765,57 @@ function syncMission(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// UPLOAD & ANALISI IMMAGINI
+// UPLOAD & ANALISI IMMAGINI (fronte/retro)
 // ═══════════════════════════════════════════════════════════
 const imgs={};
+
+function triggerFile(id){document.getElementById(id).click();}
+function setCapture(id,on){
+  const el=document.getElementById(id);
+  if(on)el.setAttribute('capture','environment');
+  else el.removeAttribute('capture');
+  el.click();
+}
+
 function uploadImg(n,inp){
   const f=inp.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=ev=>{
     imgs[n]={b64:ev.target.result.split(',')[1],type:f.type||'image/jpeg'};
-    document.getElementById('pi'+n).src=ev.target.result;
-    document.getElementById('pn'+n).textContent=f.name+' ('+Math.round(f.size/1024)+' KB)';
-    document.getElementById('pv'+n).style.display='flex';
-    document.getElementById('uz'+n).style.display='none';
-    analyzeImg(n);
+    const pvEl=document.getElementById('pv'+n);
+    const piEl=document.getElementById('pi'+n);
+    const uzEl=document.getElementById('uz'+n);
+    if(pvEl){pvEl.style.display='flex';}
+    if(piEl){piEl.src=ev.target.result;}
+    if(uzEl){uzEl.style.display='none';}
+    // Analisi AI solo sul fronte (a o 1,2,3 senza lettera)
+    const base=String(n).replace(/[ab]/,'');
+    const side=String(n).slice(-1);
+    if(side!=='b'){
+      // fronte: avvia analisi
+      analyzeImg(base);
+    }
   };
   r.readAsDataURL(f);
 }
+
 function clearImg(n){
   delete imgs[n];
-  document.getElementById('fi'+n).value='';
-  document.getElementById('pv'+n).style.display='none';
-  document.getElementById('uz'+n).style.display='block';
+  const fi=document.getElementById('fi'+n);
+  const pv=document.getElementById('pv'+n);
+  const uz=document.getElementById('uz'+n);
+  if(fi)fi.value='';
+  if(pv)pv.style.display='none';
+  if(uz)uz.style.display='block';
 }
 function showErr(n,msg){const e=document.getElementById('em'+n);if(e){e.textContent=msg;e.style.display='block';}}
 
 async function analyzeImg(n){
+  // Usa il fronte (na) se disponibile, altrimenti il singolo
+  const img=imgs[n+'a']||imgs[n];
   document.getElementById('em'+n).style.display='none';
   document.getElementById('an'+n).style.display='block';
-  const img=imgs[n];
+  if(!img){document.getElementById('an'+n).style.display='none';return;}
   const prompts={
     1:'Estrai dati anagrafici e documento da questa immagine. Rispondi SOLO con JSON valido senza markdown:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
     2:'Estrai dati natante da questo documento. Rispondi SOLO con JSON valido senza markdown:\n{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
@@ -862,6 +967,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function getData(){
   syncMission();
   return{
+    pvnum:gv('pvnum'),
     tcog:gv('tcog'),tnom:gv('tnom'),tnata:gv('tnata'),tnatd:gv('tnatd'),
     tres:gv('tres'),tvia:gv('tvia'),tciv:gv('tciv'),tcf:gv('tcf'),
     tqua:gr('qua'),tdoc:gr('doc'),tdnum:gv('tdnum'),tdil:gv('tdil'),tdda:gv('tdda'),
@@ -895,7 +1001,7 @@ td{border:1px solid #000;padding:3.5pt 5pt;vertical-align:top;font-size:9.5pt}
 <table class="nb"><tr>
 <td style="width:30%;border:none;font-size:8pt">SEZIONE: ${esc(d.vsez)}<br>MEZZO: ${esc(d.vmez)}</td>
 <td style="width:40%;border:none;text-align:center"><b>CAPITANERIA DI PORTO</b><br><i>GUARDIA COSTIERA</i><br><b>OLBIA</b></td>
-<td style="width:30%;border:none;text-align:right"><b>P.V. n° ______/20___</b></td>
+<td style="width:30%;border:none;text-align:right"><b>P.V. n° ${esc(d.pvnum)||'______/20___'}</b></td>
 </tr></table>
 <h2>PROCESSO VERBALE DI ACCERTATA VIOLAZIONE AMMINISTRATIVA</h2><hr>
 <p>Il giorno <b>${esc(d.vdat)}</b> alle ore <b>${esc(d.vora)}</b> i sottoscritti verbalizzanti: <b>${esc(d.vvrb)}</b>
@@ -938,6 +1044,23 @@ ${d.vr30&&d.vr30!=='—'?`<p class="u"><b>Riduzione 30% entro 5 gg: € ${esc(d.
 }
 
 // ═══════════════════════════════════════════════════════════
+// SALVATAGGIO SU GOOGLE SHEETS
+// ═══════════════════════════════════════════════════════════
+async function saveToSheets(d) {
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(d)
+    });
+    console.log('✓ Verbale salvato su Google Sheets');
+  } catch(e) {
+    console.warn('Sheets non raggiungibile:', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // DOWNLOAD
 // ═══════════════════════════════════════════════════════════
 function dlWord(){
@@ -965,7 +1088,7 @@ function dlPDF(){
     doc.text('CAPITANERIA DI PORTO — GUARDIA COSTIERA OLBIA',PW/2,y,{align:'center'});nl(5);
     doc.text('PROCESSO VERBALE DI ACCERTATA VIOLAZIONE AMMINISTRATIVA',PW/2,y,{align:'center'});nl(5);
     doc.setFont('helvetica','normal');doc.setFontSize(8);
-    doc.text(`SEZ: ${d.vsez||'___'}  MEZZO: ${d.vmez||'___'}  P.V. n° ______/20___`,ML,y);nl(4);
+    doc.text(`SEZ: ${d.vsez||'___'}  MEZZO: ${d.vmez||'___'}  P.V. n° ${d.pvnum||'______/20___'}`,ML,y);nl(4);
     doc.line(ML,y,PW-MR,y);nl(5);
 
     doc.setFontSize(9);
@@ -1029,11 +1152,17 @@ function resetAll(){
   document.querySelectorAll('input.fi,select.fi,textarea.fi').forEach(e=>{e.value='';e.classList.remove('ok');});
   document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(e=>e.checked=false);
   document.querySelector('input[name=dic][value=NULLA]').checked=true;
+  // Reset fronte e retro tutti i blocchi
+  ['1a','1b','2a','2b','3a','3b'].forEach(n=>{
+    delete imgs[n];
+    const pv=document.getElementById('pv'+n);
+    const uz=document.getElementById('uz'+n);
+    const fi=document.getElementById('fi'+n);
+    if(pv)pv.style.display='none';
+    if(uz)uz.style.display='block';
+    if(fi)fi.value='';
+  });
   for(let i=1;i<=3;i++){
-    delete imgs[i];
-    document.getElementById('pv'+i).style.display='none';
-    document.getElementById('uz'+i).style.display='block';
-    document.getElementById('fi'+i).value='';
     document.getElementById('em'+i).style.display='none';
   }
   document.getElementById('obarea').style.opacity='1';

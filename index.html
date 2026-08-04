@@ -550,7 +550,8 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
       <label class="ci"><input type="radio" name="dic" value="ALTRO"> Altra dichiarazione</label>
     </div>
     <input class="fi" id="vdic" placeholder="Testo dichiarazione (se non NULLA)" style="margin-top:8px">
-    <button class="mic-btn idle" id="mic-dic" onclick="toggleMic('vdic','mic-dic','input')">🎤 Parla</button>
+    <button class="mic-btn idle" id="mic-dic" onclick="toggleMic('vdic','mic-dic')">🎤 Parla</button>
+    <div style="font-size:11px;color:#6a8aaa;margin-top:4px" id="mic-dic-status"></div>
 
     <div class="br">
       <button class="bback" onclick="goTo(3)">← Indietro</button>
@@ -677,7 +678,7 @@ function goTo(n) {
     const p=document.getElementById('ps'+i);
     if(p){p.classList.remove('active','done');if(i<n)p.classList.add('done');else if(i===n)p.classList.add('active');}
   }
-  if(n===5) { initSig(); autoEnableSig4(); }
+  if(n===5) { initSig(); autoEnableSig2(); autoEnableSig4(); }
   if(n===6) {
     // Salva automaticamente su Google Sheets
     const d=getData();
@@ -1098,6 +1099,17 @@ function autoEnableSig4(){
     const se4=document.getElementById('se4');if(se4)se4.checked=true;
   }
 }
+
+// Abilita automaticamente la firma dell'Obbligato in Solido se i suoi dati sono compilati
+function autoEnableSig2(){
+  const sameChecked = document.getElementById('samecb') && document.getElementById('samecb').checked;
+  const ocogFilled = gv('ocog') || gv('onom');
+  if((sameChecked || ocogFilled) && !sigOn[2]){
+    sigOn[2]=true;
+    const sb2=document.getElementById('sb2');if(sb2)sb2.classList.remove('dis');
+    const se2=document.getElementById('se2');if(se2)se2.checked=true;
+  }
+}
 function clrSig(n){const c=document.getElementById('sc'+n);if(c&&c._ctx){c._ctx.clearRect(0,0,c.width,c.height);document.getElementById('sw'+n).classList.remove('signed');}}
 function getSig(n){
   if(!sigOn[n])return null;
@@ -1380,7 +1392,23 @@ function toggleMic(fieldId, btnId) {
   if(recognition && activeRecBtn===btnId){
     recognition.stop();return;
   }
-  if(recognition){recognition.stop();}
+  // Se un altro campo sta registrando, fermalo e resetta subito il suo stato visivo
+  // (evita race condition: l'onend asincrono del vecchio non deve interferire col nuovo)
+  if(recognition){
+    const oldBtnId=activeRecBtn;
+    recognition.onend=null;
+    recognition.onerror=null;
+    recognition.onresult=null;
+    try{recognition.stop();}catch(e){}
+    if(oldBtnId){
+      const oldBtn=document.getElementById(oldBtnId);
+      const oldStatus=document.getElementById(oldBtnId+'-status');
+      if(oldBtn){oldBtn.textContent='🎤 Parla per dettare';oldBtn.className='mic-btn idle';}
+      if(oldStatus)oldStatus.textContent='';
+    }
+    recognition=null;
+    activeRecBtn=null;
+  }
 
   const r=new SR();
   r.lang='it-IT';r.continuous=true;r.interimResults=true;

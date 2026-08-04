@@ -677,7 +677,7 @@ function goTo(n) {
     const p=document.getElementById('ps'+i);
     if(p){p.classList.remove('active','done');if(i<n)p.classList.add('done');else if(i===n)p.classList.add('active');}
   }
-  if(n===5) initSig();
+  if(n===5) { initSig(); autoEnableSig4(); }
   if(n===6) {
     // Salva automaticamente su Google Sheets
     const d=getData();
@@ -852,9 +852,9 @@ async function analyzeImg(n){
   document.getElementById('an'+ni).style.display='block';
   if(!img){document.getElementById('an'+ni).style.display='none';return;}
   const prompts={
-    1:'Estrai dati anagrafici e documento da questa immagine. Rispondi SOLO con JSON valido senza markdown:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
-    2:'Estrai dati natante da questo documento. Rispondi SOLO con JSON valido senza markdown:\n{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
-    3:'Estrai dati intestatario/proprietario. Rispondi SOLO con JSON valido senza markdown:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
+    1:'Analizza attentamente questo documento di identità italiano. Estrai SOLO i dati che vedi scritti chiaramente, distinguendo con precisione:\n- cog = COGNOME della persona\n- nom = NOME della persona\n- nata = LUOGO DI NASCITA (città, es. "Olbia")\n- natd = DATA DI NASCITA della persona (formato GG/MM/AAAA)\n- res = COMUNE DI RESIDENZA della persona (dove abita, es. "Sassari")\n- via = indirizzo di residenza (via/piazza)\n- civ = numero civico\n- cf = CODICE FISCALE (16 caratteri alfanumerici)\n- dtype = tipo di documento (es. Carta identità, Patente, Passaporto, Tessera)\n- dnum = NUMERO del documento stampato sul documento stesso\n- dil = DATA DI RILASCIO del documento (quando è stato emesso, formato GG/MM/AAAA — NON è la data di nascita)\n- dda = ENTE CHE HA RILASCIATO il documento (es. "Comune di Olbia", "Cap. Porto Olbia" — NON è un luogo di residenza)\nATTENZIONE: non confondere il luogo di nascita (nata) con il comune di residenza (res). Non confondere la data di nascita (natd) con la data di rilascio documento (dil).\nRispondi SOLO con JSON valido senza markdown, usa null se un dato non è leggibile:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
+    2:'Analizza attentamente questo documento di un natante/imbarcazione. Estrai SOLO i dati che vedi scritti chiaramente, distinguendo con precisione:\n- tar = SIGLA/TARGA del natante (es. "OT1234A")\n- nom = NOME dato al natante/imbarcazione (se presente)\n- mar = MARCA e MODELLO dello scafo/imbarcazione\n- sta = STAZZA LORDA (numero in tonnellate)\n- nmot = NUMERO DI MOTORI installati (quanti motori)\n- mmot = MARCA E MODELLO DEL MOTORE (es. "Yamaha F150")\n- mat = MATRICOLA/NUMERO DI SERIE DEL MOTORE (codice identificativo stampato sul motore stesso, diverso dalla targa del natante)\n- pot = POTENZA del motore in CV o kW\n- por = PORTO di iscrizione/stanza dell\'imbarcazione\n- tmot = tipo di motore: F.B. (fuoribordo), E.B. (entrobordo) o E.F.B.\nATTENZIONE: la matricola motore (mat) è un codice diverso dalla targa del natante (tar) — non confonderli. La matricola si trova solitamente stampata sul blocco motore stesso.\nRispondi SOLO con JSON valido senza markdown, usa null se un dato non è leggibile:\n{"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
+    3:'Analizza attentamente questo documento di identità o societario. Estrai SOLO i dati che vedi scritti chiaramente, distinguendo con precisione:\n- cog = COGNOME della persona OPPURE ragione sociale se è una società\n- nom = NOME della persona (vuoto se società)\n- nata = LUOGO DI NASCITA della persona (città)\n- natd = DATA DI NASCITA della persona (formato GG/MM/AAAA)\n- res = COMUNE DI RESIDENZA o sede legale (dove abita/ha sede)\n- via = indirizzo (via/piazza)\n- civ = numero civico\n- piv = PARTITA IVA (11 cifre, se presente)\n- dnum = NUMERO del documento di identità\n- dil = DATA DI RILASCIO del documento (quando è stato emesso — NON è la data di nascita)\n- dda = ENTE CHE HA RILASCIATO il documento (NON è un luogo di residenza)\nATTENZIONE: non confondere il luogo di nascita (nata) con il comune di residenza (res). Non confondere la data di nascita (natd) con la data di rilascio documento (dil).\nRispondi SOLO con JSON valido senza markdown, usa null se un dato non è leggibile:\n{"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
   };
     const msgs={1:['Riconoscimento documento...','Estrazione dati anagrafici...','Lettura documento ID...'],
                2:['Analisi documento bordo...','Estrazione dati natante...','Lettura dati motore...'],
@@ -903,9 +903,9 @@ async function analyzeImgRetro(ni, imgKey){
   if(em) em.style.display='none';
 
   const prompts={
-    1:'Estrai dati anagrafici e documento da questa immagine (retro). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
-    2:'Estrai dati natante da questo documento (retro). Rispondi SOLO con JSON valido senza markdown: {"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
-    3:'Estrai dati intestatario/proprietario (retro). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
+    1:'Analizza il RETRO di questo documento di identità. Estrai SOLO i dati leggibili, distinguendo: dil = DATA DI RILASCIO del documento (NON data di nascita), dda = ENTE che ha rilasciato il documento (NON luogo di residenza), res = COMUNE DI RESIDENZA (NON luogo di nascita). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"cf":null,"dtype":null,"dnum":null,"dil":null,"dda":null}',
+    2:'Analizza il RETRO di questo documento del natante. Estrai SOLO i dati leggibili, distinguendo: mat = MATRICOLA/NUMERO DI SERIE DEL MOTORE (diverso dalla targa tar del natante), tar = SIGLA/TARGA del natante. Rispondi SOLO con JSON valido senza markdown: {"tar":null,"nom":null,"mar":null,"sta":null,"nmot":null,"mmot":null,"mat":null,"pot":null,"por":null,"tmot":null}',
+    3:'Analizza il RETRO di questo documento. Estrai SOLO i dati leggibili, distinguendo: dil = DATA DI RILASCIO del documento (NON data di nascita), dda = ENTE che ha rilasciato il documento (NON luogo di residenza), res = COMUNE DI RESIDENZA/sede (NON luogo di nascita). Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"nata":null,"natd":null,"res":null,"via":null,"civ":null,"piv":null,"dnum":null,"dil":null,"dda":null}'
   };
 
   // Mappa campi per blocco
@@ -1087,6 +1087,17 @@ function initSig(){
   });
 }
 function togSig(n,on){sigOn[n]=on;document.getElementById('sb'+n).classList.toggle('dis',!on);}
+
+// Abilita automaticamente la firma del Verbalizzante 2 se sono stati inseriti 2+ verbalizzanti
+function autoEnableSig4(){
+  const verbCount = [];
+  for(let i=1;i<=vcnt;i++){const e=document.getElementById('vi'+i);if(e&&e.value.trim())verbCount.push(e.value.trim());}
+  if(verbCount.length>=2 && !sigOn[4]){
+    sigOn[4]=true;
+    const sb4=document.getElementById('sb4');if(sb4)sb4.classList.remove('dis');
+    const se4=document.getElementById('se4');if(se4)se4.checked=true;
+  }
+}
 function clrSig(n){const c=document.getElementById('sc'+n);if(c&&c._ctx){c._ctx.clearRect(0,0,c.width,c.height);document.getElementById('sw'+n).classList.remove('signed');}}
 function getSig(n){
   if(!sigOn[n])return null;

@@ -159,22 +159,31 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-  <div class="lbox">
+<!-- HOME -->
+<div id="home" style="position:fixed;inset:0;background:#0B2545;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px">
+  <div style="width:100%;max-width:380px">
     <div class="llogo">⚓</div>
-    <div class="ltitle">Guardia Costiera Olbia</div>
-    <div class="lsub">Accesso operatori autorizzati</div>
-    <div class="lerr" id="lerr"></div>
-    <label class="llbl">Password</label>
-    <input class="linp" type="password" id="lpass" placeholder="Inserisci password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="lbtn" onclick="doLogin()">🔐 Accedi</button>
-    <div class="lhint">Password: cp.olbia2024</div>
+    <div class="ltitle">Capitaneria di Porto Olbia</div>
+    <div class="lsub">Sistema di compilazione assistita</div>
+    <button onclick="startMode('verbale')" style="width:100%;background:#fff;border:none;border-radius:14px;padding:20px;margin-bottom:14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:0 4px 14px rgba(0,0,0,.15)">
+      <div style="font-size:32px">📋</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#0B2545">Verbale</div>
+        <div style="font-size:11.5px;color:#6a8aaa;margin-top:2px">Accertata violazione amministrativa</div>
+      </div>
+    </button>
+    <button onclick="startMode('bollino')" style="width:100%;background:#fff;border:none;border-radius:14px;padding:20px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:0 4px 14px rgba(0,0,0,.15)">
+      <div style="font-size:32px">🔵</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#0B2545">Bollino Blu</div>
+        <div style="font-size:11.5px;color:#6a8aaa;margin-top:2px">Accertamento condizioni di sicurezza</div>
+      </div>
+    </button>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none;visibility:hidden">
+<div id="app" style="display:none">
 
 <div class="hdr">
   <div style="font-size:26px">⚓</div>
@@ -187,13 +196,9 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <input id="pvnum" type="text" placeholder="___/20__" maxlength="12"
       style="width:80px;padding:5px 7px;border:1.5px solid #C9A84C;border-radius:6px;font-size:13px;font-weight:700;color:#0B2545;background:#fff;font-family:inherit;text-align:center">
   </div>
-  <div id="ubadge">
-    <span id="uname"></span>
-    <button class="lout" onclick="doLogout()">Esci</button>
-  </div>
 </div>
 
-<div class="prog">
+<div class="prog" id="progV">
   <div class="ps active" id="ps0" onclick="goTo(0)"><div class="pd">⚑</div><div class="pl">Missione</div></div>
   <div class="ps" id="ps1" onclick="goTo(1)"><div class="pd">1</div><div class="pl">Trasgr.</div></div>
   <div class="ps" id="ps2" onclick="goTo(2)"><div class="pd">2</div><div class="pl">Mezzo</div></div>
@@ -201,6 +206,13 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
   <div class="ps" id="ps4" onclick="goTo(4)"><div class="pd">4</div><div class="pl">Violaz.</div></div>
   <div class="ps" id="ps5" onclick="goTo(5)"><div class="pd">5</div><div class="pl">Firme</div></div>
   <div class="ps" id="ps6" onclick="goTo(6)"><div class="pd">✓</div><div class="pl">Genera</div></div>
+</div>
+<div class="prog" id="progB" style="display:none">
+  <div class="ps active" id="psb0" onclick="goTo(0)"><div class="pd">⚑</div><div class="pl">Missione</div></div>
+  <div class="ps" id="psb10" onclick="goTo(10)"><div class="pd">1</div><div class="pl">Unità</div></div>
+  <div class="ps" id="psb11" onclick="goTo(11)"><div class="pd">2</div><div class="pl">Controlli</div></div>
+  <div class="ps" id="psb12" onclick="goTo(12)"><div class="pd">3</div><div class="pl">Firme</div></div>
+  <div class="ps" id="psb13" onclick="goTo(13)"><div class="pd">✓</div><div class="pl">Genera</div></div>
 </div>
 
 <div class="body">
@@ -233,10 +245,221 @@ canvas{display:block;width:100%;height:110px;cursor:crosshair;border-radius:6px;
     <button class="addv" onclick="addVerb()">+ Aggiungi verbalizzante</button>
 
     <div class="br" style="margin-top:16px">
-      <button class="bnext" onclick="goTo(1)">Avanti — Trasgressore →</button>
+      <button class="bback" onclick="goHome()">← Home</button>
+      <button class="bnext" onclick="goTo(appMode==='bollino'?10:1)">Avanti →</button>
     </div>
   </div>
 </div>
+
+<!-- ═══════ FLUSSO BOLLINO BLU ═══════ -->
+
+<!-- BOLLINO 1: DATI UNITA E PERSONA -->
+<div class="card" id="b10">
+  <div class="ch c1"><div class="cn">1</div> Dati unità e persona</div>
+  <div class="cb">
+    <div class="info">📷 Fotografa i documenti — i dati si compilano automaticamente. Puoi comunque modificare o completare a mano.</div>
+
+    <div class="sec">📄 Documento unità (licenza navigazione / libretto)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FRONTE</div>
+        <div class="uz" id="uz_p2a" onclick="triggerFile('fi_p2a')">
+          <input type="file" id="fi_p2a" accept="image/*" onchange="uploadImgBollino('p2a',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🚢</div>
+          <p style="font-size:11px">Fronte documento unità</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi_p2a',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi_p2a',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv_p2a" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi_p2a" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImgBollino('p2a')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">RETRO</div>
+        <div class="uz" id="uz_p2b" onclick="triggerFile('fi_p2b')">
+          <input type="file" id="fi_p2b" accept="image/*" onchange="uploadImgBollino('p2b',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🚢</div>
+          <p style="font-size:11px">Retro documento unità</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi_p2b',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi_p2b',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv_p2b" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi_p2b" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImgBollino('p2b')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
+    </div>
+    <div class="an" id="an_p2"><div class="sp"></div><p id="at_p2">Analisi in corso...</p></div>
+    <div class="em" id="em_p2"></div>
+
+    <div class="sec">Tipo unità</div>
+    <div class="cr">
+      <label class="ci"><input type="radio" name="bltipo" value="Imbarcazione/nave da diporto iscritta"> Imbarcazione/nave iscritta</label>
+      <label class="ci"><input type="radio" name="bltipo" value="Natante"> Natante</label>
+    </div>
+    <div class="g2">
+      <div class="fg full"><label>Sigla di individuazione</label><input class="fi" id="blsigla" placeholder="—"></div>
+      <div class="fg"><label>Marca/Modello</label><input class="fi" id="blmarca" placeholder="—"></div>
+      <div class="fg"><label>Lunghezza f.t.</label><input class="fi" id="bllft" placeholder="—"></div>
+    </div>
+    <div class="sec">Motore</div>
+    <div class="g3">
+      <div class="fg"><label>Marca</label><input class="fi" id="blmotmarca" placeholder="—"></div>
+      <div class="fg"><label>Hp/Cv</label><input class="fi" id="blmothp" placeholder="—"></div>
+      <div class="fg"><label>Matricola</label><input class="fi" id="blmotmat" placeholder="—"></div>
+    </div>
+    <div class="sec">Destinazione unità</div>
+    <div class="cr">
+      <label class="ci"><input type="radio" name="bldest" value="Unità da diporto"> Unità da diporto</label>
+      <label class="ci"><input type="radio" name="bldest" value="Unità adibita a noleggio/locazione"> Noleggio/locazione</label>
+    </div>
+    <div class="sec">Proprietario / Armatore</div>
+    <div class="g2">
+      <div class="fg full"><label>Proprietario/Armatore</label><input class="fi" id="blprop" placeholder="—"></div>
+    </div>
+
+    <div class="sec" style="margin-top:16px">📄 Documento persona (identità / patente nautica)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">FRONTE</div>
+        <div class="uz" id="uz_p1a" onclick="triggerFile('fi_p1a')">
+          <input type="file" id="fi_p1a" accept="image/*" onchange="uploadImgBollino('p1a',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🪪</div>
+          <p style="font-size:11px">Fronte documento persona</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi_p1a',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi_p1a',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv_p1a" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi_p1a" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImgBollino('p1a')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#6a8aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">RETRO</div>
+        <div class="uz" id="uz_p1b" onclick="triggerFile('fi_p1b')">
+          <input type="file" id="fi_p1b" accept="image/*" onchange="uploadImgBollino('p1b',this)" style="display:none">
+          <div class="ui" style="font-size:22px">🪪</div>
+          <p style="font-size:11px">Retro documento persona</p>
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+            <button onclick="event.stopPropagation();setCapture('fi_p1b',false)" style="padding:5px 8px;background:#fff;border:1.5px solid #2B7CB5;border-radius:5px;font-size:11px;color:#2B7CB5;cursor:pointer;font-family:inherit">🖼️</button>
+            <button onclick="event.stopPropagation();setCapture('fi_p1b',true)" style="padding:5px 8px;background:#0B2545;border:none;border-radius:5px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit">📷</button>
+          </div>
+        </div>
+        <div class="pv" id="pv_p1b" style="display:none;flex-direction:column;gap:4px;padding:6px;margin-bottom:0">
+          <img id="pi_p1b" src="" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:4px">
+          <span class="pvc" onclick="clearImgBollino('p1b')" style="text-align:center">✕ Rimuovi</span>
+        </div>
+      </div>
+    </div>
+    <div class="an" id="an_p1"><div class="sp"></div><p id="at_p1">Analisi in corso...</p></div>
+    <div class="em" id="em_p1"></div>
+
+    <div class="sec">Al comando / condotta da</div>
+    <div class="g2">
+      <div class="fg full"><label>Nome comandante/conducente</label><input class="fi" id="blcond" placeholder="—"></div>
+      <div class="fg full"><label>Generalità complete</label><input class="fi" id="blgen" placeholder="—"></div>
+      <div class="fg full"><label>Telefono / e-mail</label><input class="fi" id="bltel" placeholder="—"></div>
+    </div>
+    <div class="sec">Documento di identificazione</div>
+    <div class="g3">
+      <div class="fg"><label>Tipo</label><input class="fi" id="bldoctipo" placeholder="—"></div>
+      <div class="fg"><label>Numero</label><input class="fi" id="bldocnum" placeholder="—"></div>
+      <div class="fg"><label>Rilasciato il</label><input class="fi" id="bldocril" placeholder="—"></div>
+      <div class="fg"><label>Rilasciato da</label><input class="fi" id="bldocda" placeholder="—"></div>
+      <div class="fg"><label>Scadenza</label><input class="fi" id="bldocscad" placeholder="—"></div>
+    </div>
+    <div class="sec">Patente nautica</div>
+    <div class="g3">
+      <div class="fg"><label>Numero</label><input class="fi" id="blpatnum" placeholder="—"></div>
+      <div class="fg"><label>Rilasciata il</label><input class="fi" id="blpatril" placeholder="—"></div>
+      <div class="fg"><label>Rilasciata da</label><input class="fi" id="blpatda" placeholder="—"></div>
+      <div class="fg"><label>Scadenza</label><input class="fi" id="blpatscad" placeholder="—"></div>
+    </div>
+    <div class="br">
+      <button class="bback" onclick="goTo(0)">← Indietro</button>
+      <button class="bnext" onclick="goTo(11)">Avanti — Controlli →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOLLINO 2: CONTROLLI E BOLLINO -->
+<div class="card" id="b11">
+  <div class="ch c4"><div class="cn">2</div> Controlli effettuati e bollino</div>
+  <div class="cb">
+    <div class="sec">Controlli effettuati</div>
+    <div class="g2">
+      <div class="fg full"><label>Distanza dalla costa</label><input class="fi" id="bldistcosta" placeholder="—"></div>
+    </div>
+    <div class="cr">
+      <label class="ci"><input type="checkbox" id="blchkdoc"> Regolare tenuta documentazione di bordo</label>
+      <label class="ci"><input type="checkbox" id="blchksic"> Presenza mezzi salvataggio e dotazioni sicurezza</label>
+    </div>
+    <div class="sec">Annotazioni</div>
+    <textarea class="fi" id="blnote" placeholder="Annotazioni eventuali..."></textarea>
+    <button class="mic-btn idle" id="mic-blnote" onclick="toggleMic('blnote','mic-blnote')">🎤 Parla per dettare</button>
+    <div style="font-size:11px;color:#6a8aaa;margin-top:4px" id="mic-blnote-status"></div>
+    <div class="sec" style="margin-top:10px">Esito del controllo</div>
+    <div class="cr">
+      <label class="ci"><input type="radio" name="blesito" value="Regolare" checked> Regolare — Bollino rilasciato</label>
+      <label class="ci"><input type="radio" name="blesito" value="Irregolarità"> Irregolarità riscontrate</label>
+    </div>
+    <div class="g2">
+      <div class="fg full"><label>N° Bollino rilasciato</label><input class="fi" id="blbollino" placeholder="—"></div>
+    </div>
+    <div class="br">
+      <button class="bback" onclick="goTo(10)">← Indietro</button>
+      <button class="bnext" onclick="goTo(12)">Avanti — Firme →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOLLINO 3: FIRME -->
+<div class="card" id="b12">
+  <div class="ch c5"><div class="cn">3</div> Firme</div>
+  <div class="cb">
+    <div class="info">✍️ Firma con pennino o dito</div>
+    <div class="sb" id="sbb1">
+      <div class="sh2"><span class="st">Firma della parte (proprietario/comandante)</span></div>
+      <div class="scw" id="swb1"><canvas id="scb1"></canvas></div>
+      <div class="sa"><span class="sh3">Firma con pennino o dito</span><button class="clrs" onclick="clrSigB(1)">✕ Cancella</button></div>
+    </div>
+    <div class="sb" id="sbb2">
+      <div class="sh2"><span class="st">Firma dei verbalizzanti</span></div>
+      <div class="scw" id="swb2"><canvas id="scb2"></canvas></div>
+      <div class="sa"><span class="sh3">Firma con pennino o dito</span><button class="clrs" onclick="clrSigB(2)">✕ Cancella</button></div>
+    </div>
+    <div class="br">
+      <button class="bback" onclick="goTo(11)">← Indietro</button>
+      <button class="bgold" onclick="goTo(13)">Genera verbale →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOLLINO 4: OUTPUT -->
+<div class="card" id="b13">
+  <div class="ch c6"><div class="cn">✓</div> Verbale pronto</div>
+  <div class="cb">
+    <div class="sbox">
+      <h4>✅ Verbale Operazioni Compiute pronto</h4>
+      <p>Scarica e conserva a bordo in originale, come previsto dalla normativa.</p>
+    </div>
+    <div class="dlrow">
+      <button class="bw" onclick="dlWordBollino()">📘 Scarica Word</button>
+      <button class="bp" onclick="dlPDFBollino()">📕 Scarica PDF</button>
+    </div>
+    <button class="bn" onclick="resetAllBollino()">🔄 Nuovo verbale bollino</button>
+    <button class="bn" onclick="goHome()">🏠 Torna alla home</button>
+  </div>
+</div>
+
+<!-- ═══════ FINE FLUSSO BOLLINO BLU ═══════ -->
 
 <!-- BLOCCO 1: TRASGRESSORE -->
 <div class="card" id="b1">
@@ -632,53 +855,56 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz4_Rnbl-xhgLDYVsDbl
 // ═══════════════════════════════════════════════════════════
 
 
-// Password unica per tutti gli operatori
-const PASSWORD = 'cp.olbia2024';
-const PASSWORD_ADMIN = 'capitaneria2024';
-
-function doLogin() {
-  try {
-    const p = (document.getElementById('lpass').value||'').trim();
-    const err = document.getElementById('lerr');
-    if (p === PASSWORD || p === PASSWORD_ADMIN) {
-      err.style.display='none';
-      document.getElementById('login').style.display='none';
-      document.getElementById('app').style.display='block';document.getElementById('app').style.visibility='visible';
-      document.getElementById('ubadge').style.display='flex';
-      document.getElementById('uname').textContent='👤 Operatore';
-      startClock();
-      goTo(0);
-      setTimeout(syncMission, 200);
-    } else {
-      err.style.display='block';
-      err.innerHTML='❌ Password errata';
-      document.getElementById('lpass').value='';
-    }
-  } catch(e) {
-    alert('Errore login: '+e.message);
-    console.error('doLogin error:', e);
-  }
-}
-
-function doLogout() {
-  document.getElementById('login').style.display='flex';
-  document.getElementById('app').style.display='none';
-  document.getElementById('lpass').value='';
-  resetAll();
-}
+// Avvio diretto dell'app
+// Init spostata in startMode(), chiamata al click sui pulsanti home
 
 // ═══════════════════════════════════════════════════════════
 // NAVIGAZIONE
 // ═══════════════════════════════════════════════════════════
+let appMode = null;
+const VERBALE_ORDER = [0,1,2,3,4,5,6];
+const BOLLINO_ORDER = [0,10,11,12,13];
+
+function startMode(mode){
+  appMode = mode;
+  document.getElementById('home').style.display='none';
+  document.getElementById('app').style.display='block';
+  startClock();
+  loadDraft();
+  goTo(0);
+  setTimeout(syncMission,200);
+}
+
+function goHome(){
+  clearDraft();
+  appMode=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('home').style.display='flex';
+}
+
 function goTo(n) {
   try{syncMission();}catch(e){console.warn('syncMission:',e);}
-  for(let i=0;i<=6;i++){
+  const allBlocks=[0,1,2,3,4,5,6,10,11,12,13];
+  allBlocks.forEach(i=>{
     const b=document.getElementById('b'+i);
     if(b) b.classList.toggle('active',i===n);
-    const p=document.getElementById('ps'+i);
-    if(p){p.classList.remove('active','done');if(i<n)p.classList.add('done');else if(i===n)p.classList.add('active');}
-  }
+  });
+  const isBollino = appMode==='bollino';
+  const order = isBollino ? BOLLINO_ORDER : VERBALE_ORDER;
+  const prefix = isBollino ? 'psb' : 'ps';
+  const pv=document.getElementById('progV'); if(pv) pv.style.display = isBollino ? 'none':'flex';
+  const pb=document.getElementById('progB'); if(pb) pb.style.display = isBollino ? 'flex':'none';
+  const curIdx = order.indexOf(n);
+  order.forEach((i,idx)=>{
+    const p=document.getElementById(prefix+i);
+    if(p){
+      p.classList.remove('active','done');
+      if(idx<curIdx) p.classList.add('done');
+      else if(idx===curIdx) p.classList.add('active');
+    }
+  });
   if(n===5) { initSig(); autoEnableSig2(); autoEnableSig4(); }
+  if(n===12) { initSigBollino(); }
   if(n===6) {
     // Salva automaticamente su Google Sheets
     const d=getData();
@@ -1118,6 +1344,34 @@ function getSig(n){
   return px.some((_,i)=>i%4===3&&px[i]>0)?c.toDataURL('image/png'):null;
 }
 
+// ── FIRME BOLLINO BLU (canvas dedicati) ──
+function initSigBollino(){
+  [1,2].forEach(n=>{
+    const c=document.getElementById('scb'+n);
+    if(!c||c._init)return; c._init=true;
+    const dpr=window.devicePixelRatio||1;
+    c.style.width='100%';c.style.height='110px';
+    const w=c.parentElement.offsetWidth||320;
+    c.width=w*dpr;c.height=110*dpr;
+    const ctx=c.getContext('2d');
+    ctx.scale(dpr,dpr);
+    ctx.strokeStyle='#0B2545';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+    c._ctx=ctx;c._draw=false;
+    const pos=e=>{const r=c.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
+    const dn=e=>{e.preventDefault();c._draw=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+    const mv=e=>{if(!c._draw)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();document.getElementById('swb'+n).classList.add('signed');};
+    const up=()=>c._draw=false;
+    c.addEventListener('mousedown',dn);c.addEventListener('mousemove',mv);c.addEventListener('mouseup',up);
+    c.addEventListener('touchstart',dn,{passive:false});c.addEventListener('touchmove',mv,{passive:false});c.addEventListener('touchend',up);
+  });
+}
+function clrSigB(n){const c=document.getElementById('scb'+n);if(c&&c._ctx){c._ctx.clearRect(0,0,c.width,c.height);document.getElementById('swb'+n).classList.remove('signed');}}
+function getSigB(n){
+  const c=document.getElementById('scb'+n);if(!c||!c._ctx)return null;
+  const px=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+  return px.some((_,i)=>i%4===3&&px[i]>0)?c.toDataURL('image/png'):null;
+}
+
 // ═══════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════
@@ -1151,57 +1405,151 @@ function getData(){
 function sigImg(n){const u=getSig(n);return u?`<img src="${u}" style="max-width:160px;max-height:55px;display:block;margin:3pt auto">`:'<br><br>____________________________';}
 
 function buildDoc(d){
+  const sigCell=(n)=>getSig(n)?`<img src="${getSig(n)}" style="max-width:150px;max-height:44px;display:block;margin:0 auto">`:'<div class="sig-space">— non presente —</div>';
+  const r30row=(d.vr30&&d.vr30!=='—')?`<div class="row">Riduzione 30% entro 5 giorni: <span class="amt">€ ${esc(d.vr30)},—</span></div>`:'';
   return`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
-<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:1.5cm;color:#000}
-h2{font-size:11pt;text-align:center;margin:6pt 0}
-table{width:100%;border-collapse:collapse;margin:4pt 0}
-td{border:1px solid #000;padding:3.5pt 5pt;vertical-align:top;font-size:9.5pt}
-.sh{background:#dce6f1;font-weight:bold}.nb td{border:none}
-.u{text-decoration:underline}p{margin:3pt 0;font-size:9.5pt}hr{border-top:1px solid #000;margin:4pt 0}
+<style>
+body{font-family:Georgia,'Times New Roman',serif;font-size:10.5pt;margin:1.5cm;color:#1a2332}
+.doc-header{width:100%;border-collapse:collapse;border-bottom:3px solid #0B2545;padding-bottom:10pt;margin-bottom:4pt}
+.doc-header td{border:none;vertical-align:middle;padding:0}
+.htitle{font-family:Arial,sans-serif;font-size:13pt;font-weight:bold;letter-spacing:1pt;color:#0B2545;text-align:center}
+.hsub{font-family:Arial,sans-serif;font-size:9pt;font-style:italic;color:#5a6472;text-align:center;margin-top:2pt}
+.pvbox{border:1.5pt solid #0B2545;border-radius:4pt;padding:5pt 10pt;text-align:center;font-family:Arial,sans-serif}
+.pvbox .lbl{font-size:7pt;text-transform:uppercase;letter-spacing:1pt;color:#5a6472}
+.pvbox .num{font-size:13pt;font-weight:bold;color:#0B2545}
+.title-band{text-align:center;margin:14pt 0 6pt}
+.kicker{font-family:Arial,sans-serif;font-size:8pt;letter-spacing:3pt;text-transform:uppercase;color:#B8901A;font-weight:bold}
+.title-band h1{font-family:Arial,sans-serif;font-size:14pt;font-weight:bold;letter-spacing:.5pt;color:#0B2545;margin:3pt 0 8pt}
+.title-rule{border-top:2pt solid #C9A84C;width:65%;margin:0 auto 14pt}
+.meta-strip{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:8.5pt;background:#f4f6f8;margin-bottom:14pt}
+.meta-strip td{border:none;padding:6pt 10pt;vertical-align:top}
+.meta-strip .k{display:block;color:#5a6472;font-size:7pt;text-transform:uppercase;letter-spacing:.5pt}
+.meta-strip .v{display:block;color:#0B2545;font-weight:bold;font-family:Georgia,serif;font-size:9.5pt}
+.narrative{font-size:10.5pt;line-height:1.55;text-align:justify;margin-bottom:12pt}
+.card{border:1pt solid #dde3e8;margin-bottom:12pt}
+.card-head{background:#0B2545;color:#fff;font-family:Arial,sans-serif;font-size:8.5pt;font-weight:bold;letter-spacing:.6pt;text-transform:uppercase;padding:5pt 10pt}
+.fgrid{width:100%;border-collapse:collapse}
+.fgrid td{border:none;width:25%;padding:6pt 8pt;vertical-align:top}
+.fk{display:block;font-family:Arial,sans-serif;font-size:6.5pt;text-transform:uppercase;letter-spacing:.5pt;color:#8a95a1}
+.fv{display:block;font-family:Georgia,serif;font-size:10pt;color:#1a2332;font-weight:bold;margin-top:1pt}
+.facts-box{border:1pt solid #dde3e8;padding:10pt 12pt;margin-bottom:12pt;font-size:10pt;line-height:1.5;min-height:40pt;background:#fbfbfa}
+.facts-label{font-family:Arial,sans-serif;font-size:7pt;text-transform:uppercase;letter-spacing:.5pt;color:#8a95a1;margin-bottom:4pt}
+.sanction{background:#fdf8ec;border:1pt solid #E8C97A;border-left:4pt solid #C9A84C;padding:10pt 14pt;margin:14pt 0}
+.sanction .row{font-family:Arial,sans-serif;font-size:9.5pt;margin-bottom:3pt;color:#4a3a10}
+.sanction .row b{color:#0B2545}
+.sanction .amt{font-weight:bold;color:#8a5c00}
+.sig-row{width:100%;border-collapse:collapse;margin-top:20pt}
+.sig-row td{border:none;width:33.3%;text-align:center;padding:0 6pt;vertical-align:bottom}
+.sig-space{font-family:Arial,sans-serif;font-size:8pt;color:#c2c8cf;height:32pt;display:block}
+.sig-line{border-top:1pt solid #0B2545;padding-top:5pt;font-family:Arial,sans-serif;font-size:7.5pt;text-transform:uppercase;letter-spacing:.5pt;color:#5a6472}
+.footer-note{margin-top:16pt;font-family:Arial,sans-serif;font-size:6.5pt;color:#9099a3;text-align:center;border-top:1pt solid #eee;padding-top:6pt}
 </style></head><body>
-<div style="text-align:center;margin-bottom:6pt"><img src="data:image/png;base64,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" style="width:60px;height:auto"></div>
-<table class="nb"><tr>
-<td style="width:30%;border:none;font-size:8pt">SEZIONE: ${esc(d.vsez)}<br>MEZZO: ${esc(d.vmez)}</td>
-<td style="width:40%;border:none;text-align:center"><b>CAPITANERIA DI PORTO</b><br><i>GUARDIA COSTIERA</i><br><b>OLBIA</b></td>
-<td style="width:30%;border:none;text-align:right"><b>P.V. n° ${esc(d.pvnum)||'______/20___'}</b></td>
+
+<table class="doc-header"><tr>
+<td style="width:60px"><img src="data:image/png;base64,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" style="width:48px;height:auto"></td>
+<td style="text-align:center">
+  <div class="htitle">CAPITANERIA DI PORTO — GUARDIA COSTIERA</div>
+  <div class="hsub">Sezione ${esc(d.vsez)||'Olbia'} · Mezzo ${esc(d.vmez)||'—'}</div>
+</td>
+<td style="width:110px;text-align:right">
+  <div class="pvbox"><div class="lbl">P.V. n°</div><div class="num">${esc(d.pvnum)||'______/20__'}</div></div>
+</td>
 </tr></table>
-<h2>PROCESSO VERBALE DI ACCERTATA VIOLAZIONE AMMINISTRATIVA</h2><hr>
-<p>Il giorno <b>${esc(d.vdat)}</b> alle ore <b>${esc(d.vora)}</b> i sottoscritti verbalizzanti: <b>${esc(d.vvrb)}</b>
-in località <b>${esc(d.vloc)}</b> (Lat. ${esc(d.vlat)} N — Long. ${esc(d.vlon)} E),
-<b>HANNO ACCERTATO</b> che:</p>
-<p>Sig. <b>${esc(d.tcog)} ${esc(d.tnom)}</b> nato a <b>${esc(d.tnata)}</b> il <b>${esc(d.tnatd)}</b>
-residente in <b>${esc(d.tres)}</b> Via <b>${esc(d.tvia)}</b> n. <b>${esc(d.tciv)}</b>
-in qualità di <b>${esc(d.tqua)}</b> — C.F. <b>${esc(d.tcf)}</b>
-identificato con: <b>${esc(d.tdoc)}</b> n. <b>${esc(d.tdnum)}</b> ril. il <b>${esc(d.tdil)}</b> da <b>${esc(d.tdda)}</b>
-CON IL SEGUENTE MEZZO:</p>
-<table>
-<tr><td class="sh" colspan="4">Mezzo nautico</td></tr>
-<tr><td><b>Targa</b><br>${esc(d.ntar)}</td><td><b>Nome</b><br>${esc(d.nnom)}</td><td><b>Marca/Modello</b><br>${esc(d.nmar)}</td><td><b>Stazza</b><br>${esc(d.nsta)}</td></tr>
-<tr><td><b>N.Mot.</b><br>${esc(d.nnmot)}</td><td><b>Tipo</b><br>${esc(d.nmot)}</td><td><b>Marca mot.</b><br>${esc(d.nmmot)}</td><td><b>Matricola</b><br>${esc(d.nmat)}</td></tr>
-<tr><td colspan="2"><b>Potenza CV</b><br>${esc(d.npot)}</td><td colspan="2"><b>Porto</b><br>${esc(d.npor)}</td></tr>
+
+<div class="title-band">
+  <div class="kicker">Verbale ufficiale</div>
+  <h1>Processo verbale di accertata violazione amministrativa</h1>
+  <div class="title-rule"></div>
+</div>
+
+<table class="meta-strip"><tr>
+<td><span class="k">Data</span><span class="v">${esc(d.vdat)}</span></td>
+<td><span class="k">Ora</span><span class="v">${esc(d.vora)}</span></td>
+<td><span class="k">Località</span><span class="v">${esc(d.vloc)}</span></td>
+<td><span class="k">Coordinate</span><span class="v">${esc(d.vlat)} / ${esc(d.vlon)}</span></td>
+</tr></table>
+
+<p class="narrative">
+I sottoscritti verbalizzanti, <b>${esc(d.vvrb)}</b>, in servizio di vigilanza costiera,
+hanno accertato quanto segue nei confronti del Sig. <b>${esc(d.tcog)} ${esc(d.tnom)}</b>,
+identificato mediante ${esc(d.tdoc)||'documento'} n. ${esc(d.tdnum)}, rilasciato il ${esc(d.tdil)} da ${esc(d.tdda)}.
+</p>
+
+<div class="card">
+<div class="card-head">Trasgressore</div>
+<table class="fgrid">
+<tr>
+<td><span class="fk">Cognome e nome</span><span class="fv">${esc(d.tcog)} ${esc(d.tnom)}</span></td>
+<td><span class="fk">Nato a</span><span class="fv">${esc(d.tnata)}</span></td>
+<td><span class="fk">Il</span><span class="fv">${esc(d.tnatd)}</span></td>
+<td><span class="fk">Cod. fiscale</span><span class="fv">${esc(d.tcf)}</span></td>
+</tr>
+<tr>
+<td colspan="2"><span class="fk">Residenza</span><span class="fv">${esc(d.tres)} — Via ${esc(d.tvia)} n.${esc(d.tciv)}</span></td>
+<td><span class="fk">Qualità</span><span class="fv">${esc(d.tqua)}</span></td>
+<td><span class="fk">Documento</span><span class="fv">${esc(d.tdoc)} n.${esc(d.tdnum)}</span></td>
+</tr>
 </table>
-<p><b>Descrizione dei fatti:</b></p>
-<p style="border:1px solid #000;min-height:45pt;padding:5pt">${esc(d.vfat)||'&nbsp;'}</p>
-<p>rendendosi responsabile della violazione: <b>${esc(d.vnor)}</b></p>
-<p>punita dall'art.: <b>${esc(d.vpun)}</b></p>
-<p>Solidalmente obbligato (in qualità di: <b>${esc(d.oq)}</b>):
-<b>${esc(d.ocog)} ${esc(d.onom)}</b> nato a <b>${esc(d.onata)}</b> il <b>${esc(d.onatd)}</b>
-residente/sede in <b>${esc(d.ores)}</b> Via <b>${esc(d.ovia)}</b> n. <b>${esc(d.ociv)}</b>
-P.IVA <b>${esc(d.opiv)}</b> — n. <b>${esc(d.odnum)}</b> ril. il <b>${esc(d.odil)}</b> da <b>${esc(d.odda)}</b></p>
-<p>Il Trasgressore DICHIARA: ${esc(d.vdic)}</p>
-<p>Copia consegnata al trasgressore ([ ] accetta [ ] rifiuta) e all'obbligato ([ ] accetta [ ] rifiuta).</p>
-<br>
-<table class="nb"><tr>
-<td style="border:none;text-align:center;width:33%"><b>IL TRASGRESSORE</b><br>${sigImg(1)}</td>
-<td style="border:none;text-align:center;width:34%"><b>L'OBBLIGATO IN SOLIDO</b><br>${sigImg(2)}</td>
-<td style="border:none;text-align:center;width:33%"><b>I VERBALIZZANTI</b><br>${sigImg(3)}<br>${sigImg(4)}</td>
+</div>
+
+<div class="card">
+<div class="card-head">Mezzo nautico</div>
+<table class="fgrid">
+<tr>
+<td><span class="fk">Targa</span><span class="fv">${esc(d.ntar)}</span></td>
+<td><span class="fk">Nome natante</span><span class="fv">${esc(d.nnom)}</span></td>
+<td><span class="fk">Marca/Modello</span><span class="fv">${esc(d.nmar)}</span></td>
+<td><span class="fk">Stazza</span><span class="fv">${esc(d.nsta)}</span></td>
+</tr>
+<tr>
+<td><span class="fk">Motore</span><span class="fv">${esc(d.nmmot)} — ${esc(d.nmot)}</span></td>
+<td><span class="fk">Matricola</span><span class="fv">${esc(d.nmat)}</span></td>
+<td><span class="fk">Potenza</span><span class="fv">${esc(d.npot)} CV</span></td>
+<td><span class="fk">Porto</span><span class="fv">${esc(d.npor)}</span></td>
+</tr>
+</table>
+</div>
+
+<div class="facts-box">
+<div class="facts-label">Descrizione dei fatti</div>
+${esc(d.vfat)||'&nbsp;'}
+</div>
+
+<div class="card">
+<div class="card-head">Obbligato in solido</div>
+<table class="fgrid">
+<tr>
+<td colspan="2"><span class="fk">Cognome/Ragione sociale e nome</span><span class="fv">${esc(d.ocog)} ${esc(d.onom)}</span></td>
+<td><span class="fk">Qualità</span><span class="fv">${esc(d.oq)}</span></td>
+<td><span class="fk">P.IVA</span><span class="fv">${esc(d.opiv)}</span></td>
+</tr>
+<tr>
+<td colspan="2"><span class="fk">Residenza/Sede</span><span class="fv">${esc(d.ores)} — Via ${esc(d.ovia)} n.${esc(d.ociv)}</span></td>
+<td colspan="2"><span class="fk">Documento</span><span class="fv">n.${esc(d.odnum)} ril. ${esc(d.odil)} da ${esc(d.odda)}</span></td>
+</tr>
+</table>
+</div>
+
+<p style="font-size:9.5pt">Il Trasgressore DICHIARA: ${esc(d.vdic)}</p>
+<p style="font-size:8pt;color:#5a6472">Copia consegnata al trasgressore ([ ] accetta [ ] rifiuta) e all'obbligato in solido ([ ] accetta [ ] rifiuta).</p>
+
+<table class="sig-row"><tr>
+<td>${sigCell(1)}<div class="sig-line">Il trasgressore</div></td>
+<td>${sigCell(2)}<div class="sig-line">L'obbligato in solido</div></td>
+<td>${sigCell(3)}${sigCell(4)}<div class="sig-line">I verbalizzanti</div></td>
 </tr></table>
-<hr>
-<p class="u"><b>Sanzione da € ${esc(d.vmin)},— a € ${esc(d.vmax)},—</b></p>
-<p class="u"><b>Pagamento ridotto entro 60 gg: € ${esc(d.vrid)},—</b></p>
-${d.vr30&&d.vr30!=='—'?`<p class="u"><b>Riduzione 30% entro 5 gg: € ${esc(d.vr30)},—</b></p>`:''}
-<p><b>Pagamento: ${esc(d.vpag)||'F23'} — Scritti difensivi a: ${esc(d.vdif)||'CP Olbia'}</b></p>
-<p style="font-size:8pt">fax 0789/22308 — contenzioso.cpolbia@mit.gov.it — Consegnare modello F23 precompilato.</p>
+
+<div class="sanction">
+<div class="row"><b>Norma violata:</b> ${esc(d.vnor)} — <b>Punita da:</b> ${esc(d.vpun)}</div>
+<div class="row">Sanzione da <span class="amt">€ ${esc(d.vmin)}</span> a <span class="amt">€ ${esc(d.vmax)}</span> — pagamento ridotto <span class="amt">€ ${esc(d.vrid)}</span></div>
+${r30row}
+<div class="row">Pagamento tramite <b>${esc(d.vpag)||'F23'}</b> — scritti difensivi a <b>${esc(d.vdif)||'CP Olbia'}</b></div>
+</div>
+
+<div class="footer-note">
+Sanzione ai sensi dell'art. 16 Legge 689/81 — Sportelli riscossione tributi competente — fax 0789/22308 — contenzioso.cpolbia@mit.gov.it
+</div>
+
 </body></html>`;
 }
 
@@ -1223,6 +1571,563 @@ async function saveToSheets(d) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// BOLLINO BLU — ACQUISIZIONE FOTO E ANALISI AI
+// ═══════════════════════════════════════════════════════════
+const imgsBollino = {};
+
+function uploadImgBollino(n, inp){
+  const f = inp.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    imgsBollino[n] = {b64: ev.target.result.split(',')[1], type: f.type||'image/jpeg'};
+    const pv=document.getElementById('pv_'+n), pi=document.getElementById('pi_'+n), uz=document.getElementById('uz_'+n);
+    if(pv) pv.style.display='flex';
+    if(pi) pi.src = ev.target.result;
+    if(uz) uz.style.display='none';
+    const side = n.slice(-1);
+    const slot = n.slice(0,-1); // 'p1a' -> 'p1'
+    if(!apiKey){
+      const em=document.getElementById('em_'+slot);
+      if(em){em.textContent='🔑 Inserisci la chiave API per l\'analisi automatica. Puoi compilare manualmente.'; em.style.display='block';}
+      return;
+    }
+    if(side!=='b') analyzeImgBollino(slot);
+    else analyzeImgBollinoRetro(slot, n);
+  };
+  r.readAsDataURL(f);
+}
+
+function clearImgBollino(n){
+  delete imgsBollino[n];
+  const fi=document.getElementById('fi_'+n), pv=document.getElementById('pv_'+n), uz=document.getElementById('uz_'+n);
+  if(fi) fi.value='';
+  if(pv) pv.style.display='none';
+  if(uz) uz.style.display='block';
+}
+
+const promptsBollino = {
+  p1: 'Analizza questo documento di identità o patente nautica di una persona. Estrai SOLO i dati leggibili, distinguendo con precisione: cog=COGNOME, nom=NOME, gen=generalità complete se utile, doctipo=tipo documento (es. Carta identità, Patente), docnum=numero documento, docril=DATA DI RILASCIO (NON data di nascita), docda=ENTE che ha rilasciato il documento, docscad=data di scadenza documento, patnum=numero patente nautica (se presente, diverso dal numero documento identità), patril=data rilascio patente nautica, patda=ente rilascio patente nautica, patscad=scadenza patente nautica. Rispondi SOLO con JSON valido senza markdown: {"cog":null,"nom":null,"gen":null,"doctipo":null,"docnum":null,"docril":null,"docda":null,"docscad":null,"patnum":null,"patril":null,"patda":null,"patscad":null}',
+  p2: 'Analizza questo documento di un\'unità da diporto (licenza di navigazione, libretto, certificato). Estrai SOLO i dati leggibili: tipo=tipo unità (Imbarcazione/nave da diporto iscritta oppure Natante), sigla=sigla di individuazione/targa, marca=marca e modello dello scafo, lft=lunghezza fuori tutto, motmarca=marca del motore, mothp=potenza Hp/Cv del motore, motmat=MATRICOLA/numero di serie del motore (diverso dalla sigla dell\'unità). Rispondi SOLO con JSON valido senza markdown: {"tipo":null,"sigla":null,"marca":null,"lft":null,"motmarca":null,"mothp":null,"motmat":null}'
+};
+
+function fillBollinoFields(slot, d){
+  if(slot==='p1'){
+    const nomeCompleto = [d.cog,d.nom].filter(Boolean).join(' ');
+    if(nomeCompleto) sf('blcond', nomeCompleto);
+    sf('blgen', d.gen);
+    sf('bldoctipo', d.doctipo);
+    sf('bldocnum', d.docnum);
+    sf('bldocril', d.docril);
+    sf('bldocda', d.docda);
+    sf('bldocscad', d.docscad);
+    sf('blpatnum', d.patnum);
+    sf('blpatril', d.patril);
+    sf('blpatda', d.patda);
+    sf('blpatscad', d.patscad);
+  } else if(slot==='p2'){
+    sf('blsigla', d.sigla);
+    sf('blmarca', d.marca);
+    sf('bllft', d.lft);
+    sf('blmotmarca', d.motmarca);
+    sf('blmothp', d.mothp);
+    sf('blmotmat', d.motmat);
+    if(d.tipo){
+      document.querySelectorAll('input[name=bltipo]').forEach(r=>{
+        if(d.tipo.toUpperCase().includes(r.value.toUpperCase().substring(0,4))) r.checked=true;
+      });
+    }
+  }
+}
+
+function fillBollinoFieldsEmpty(slot, d){
+  // Riempie solo i campi ancora vuoti (usato per il retro del documento)
+  if(slot==='p1'){
+    if(!gv('blcond')){const nc=[d.cog,d.nom].filter(Boolean).join(' ');if(nc)sf('blcond',nc);}
+    if(!gv('blgen')) sf('blgen', d.gen);
+    if(!gv('bldoctipo')) sf('bldoctipo', d.doctipo);
+    if(!gv('bldocnum')) sf('bldocnum', d.docnum);
+    if(!gv('bldocril')) sf('bldocril', d.docril);
+    if(!gv('bldocda')) sf('bldocda', d.docda);
+    if(!gv('bldocscad')) sf('bldocscad', d.docscad);
+    if(!gv('blpatnum')) sf('blpatnum', d.patnum);
+    if(!gv('blpatril')) sf('blpatril', d.patril);
+    if(!gv('blpatda')) sf('blpatda', d.patda);
+    if(!gv('blpatscad')) sf('blpatscad', d.patscad);
+  } else if(slot==='p2'){
+    if(!gv('blsigla')) sf('blsigla', d.sigla);
+    if(!gv('blmarca')) sf('blmarca', d.marca);
+    if(!gv('bllft')) sf('bllft', d.lft);
+    if(!gv('blmotmarca')) sf('blmotmarca', d.motmarca);
+    if(!gv('blmothp')) sf('blmothp', d.mothp);
+    if(!gv('blmotmat')) sf('blmotmat', d.motmat);
+  }
+}
+
+async function analyzeImgBollino(slot){
+  const img = imgsBollino[slot+'a'];
+  const anEl = document.getElementById('an_'+slot);
+  const emEl = document.getElementById('em_'+slot);
+  if(emEl){emEl.style.display='none';}
+  if(anEl){anEl.style.display='block';}
+  if(!img){ if(anEl)anEl.style.display='none'; return; }
+  const msgs = slot==='p1'
+    ? ['Riconoscimento documento...','Estrazione dati anagrafici e patente...']
+    : ['Riconoscimento documento unità...','Estrazione dati natante e motore...'];
+  let mi=0;
+  const t=setInterval(()=>{const el=document.getElementById('at_'+slot);if(el)el.textContent=msgs[Math.min(mi++,msgs.length-1)];},1500);
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:600,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:img.type,data:img.b64}},
+          {type:'text',text:promptsBollino[slot]}
+        ]}]
+      })
+    });
+    clearInterval(t);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'Errore API '+res.status);
+    const raw = data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const d = JSON.parse(raw);
+    fillBollinoFields(slot, d);
+  }catch(e){
+    clearInterval(t);
+    if(emEl){emEl.textContent='⚠️ '+e.message; emEl.style.display='block';}
+  }finally{
+    if(anEl) anEl.style.display='none';
+  }
+}
+
+async function analyzeImgBollinoRetro(slot, imgKey){
+  const img = imgsBollino[imgKey];
+  const anEl = document.getElementById('an_'+slot);
+  const emEl = document.getElementById('em_'+slot);
+  if(emEl){emEl.style.display='none';}
+  if(anEl){anEl.style.display='block';}
+  if(!img){ if(anEl)anEl.style.display='none'; return; }
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:600,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:img.type,data:img.b64}},
+          {type:'text',text:promptsBollino[slot]+' (Questo è il RETRO del documento)'}
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'Errore API');
+    const raw = data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const d = JSON.parse(raw);
+    fillBollinoFieldsEmpty(slot, d);
+  }catch(e){
+    if(emEl){emEl.textContent='⚠️ Retro: '+e.message; emEl.style.display='block';}
+  }finally{
+    if(anEl) anEl.style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// BOLLINO BLU — DATI E GENERAZIONE DOCUMENTO
+// ═══════════════════════════════════════════════════════════
+function getDataBollino(){
+  const now=new Date();
+  const data=now.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const ora=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  return {
+    vdat:data, vora:ora, vloc:gpsLoc, vlat:gpsLat, vlon:gpsLon,
+    vsez:gv('msez'), vmez:gv('mmez'), vvrb:getVerb(),
+    bltipo:gr('bltipo'), blsigla:gv('blsigla'), blmarca:gv('blmarca'), bllft:gv('bllft'),
+    blmotmarca:gv('blmotmarca'), blmothp:gv('blmothp'), blmotmat:gv('blmotmat'),
+    bldest:gr('bldest'), blprop:gv('blprop'), blcond:gv('blcond'), blgen:gv('blgen'), bltel:gv('bltel'),
+    bldoctipo:gv('bldoctipo'), bldocnum:gv('bldocnum'), bldocril:gv('bldocril'), bldocda:gv('bldocda'), bldocscad:gv('bldocscad'),
+    blpatnum:gv('blpatnum'), blpatril:gv('blpatril'), blpatda:gv('blpatda'), blpatscad:gv('blpatscad'),
+    bldistcosta:gv('bldistcosta'),
+    blchkdoc: !!(document.getElementById('blchkdoc')&&document.getElementById('blchkdoc').checked),
+    blchksic: !!(document.getElementById('blchksic')&&document.getElementById('blchksic').checked),
+    blnote:gv('blnote'),
+    blesito:gr('blesito')||'Regolare',
+    blbollino:gv('blbollino')
+  };
+}
+
+function buildDocBollino(d){
+  const chk=(v)=>v?'☑':'☐';
+  const sigCellB=(n)=>getSigB(n)?`<img src="${getSigB(n)}" style="max-width:150px;max-height:44px;display:block;margin:0 auto">`:'<div class="sig-space">— non presente —</div>';
+  return`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
+<style>
+body{font-family:Georgia,'Times New Roman',serif;font-size:10.5pt;margin:1.5cm;color:#1a2332}
+.doc-header{width:100%;border-collapse:collapse;border-bottom:3px solid #0B2545;padding-bottom:10pt;margin-bottom:4pt}
+.doc-header td{border:none;vertical-align:middle;padding:0}
+.htitle{font-family:Arial,sans-serif;font-size:13pt;font-weight:bold;letter-spacing:1pt;color:#0B2545;text-align:center}
+.hsub{font-family:Arial,sans-serif;font-size:9pt;font-style:italic;color:#5a6472;text-align:center;margin-top:2pt}
+.title-band{text-align:center;margin:14pt 0 6pt}
+.kicker{font-family:Arial,sans-serif;font-size:8pt;letter-spacing:3pt;text-transform:uppercase;color:#2B7CB5;font-weight:bold}
+.title-band h1{font-family:Arial,sans-serif;font-size:13pt;font-weight:bold;letter-spacing:.5pt;color:#0B2545;margin:3pt 0 4pt}
+.title-band .lawref{font-family:Arial,sans-serif;font-size:8.5pt;color:#5a6472;font-style:italic}
+.title-rule{border-top:2pt solid #2B7CB5;width:65%;margin:8pt auto 14pt}
+.meta-strip{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:8.5pt;background:#f4f6f8;margin-bottom:14pt}
+.meta-strip td{border:none;padding:6pt 10pt;vertical-align:top}
+.meta-strip .k{display:block;color:#5a6472;font-size:7pt;text-transform:uppercase;letter-spacing:.5pt}
+.meta-strip .v{display:block;color:#0B2545;font-weight:bold;font-family:Georgia,serif;font-size:9.5pt}
+.card{border:1pt solid #dde3e8;margin-bottom:12pt}
+.card-head{background:#0B2545;color:#fff;font-family:Arial,sans-serif;font-size:8.5pt;font-weight:bold;letter-spacing:.6pt;text-transform:uppercase;padding:5pt 10pt}
+.fgrid{width:100%;border-collapse:collapse}
+.fgrid td{border:none;width:25%;padding:6pt 8pt;vertical-align:top}
+.fk{display:block;font-family:Arial,sans-serif;font-size:6.5pt;text-transform:uppercase;letter-spacing:.5pt;color:#8a95a1}
+.fv{display:block;font-family:Georgia,serif;font-size:10pt;color:#1a2332;font-weight:bold;margin-top:1pt}
+.checks{border:1pt solid #dde3e8;padding:10pt 12pt;margin-bottom:12pt;font-family:Arial,sans-serif;font-size:9.5pt;line-height:1.9}
+.esito{background:#eaf3de;border:1pt solid #97C459;border-left:4pt solid #639922;padding:10pt 14pt;margin:14pt 0;font-family:Arial,sans-serif;font-size:10pt}
+.esito.irr{background:#fcebeb;border-color:#F09595;border-left-color:#E24B4A}
+.sig-row{width:100%;border-collapse:collapse;margin-top:20pt}
+.sig-row td{border:none;width:50%;text-align:center;padding:0 10pt;vertical-align:bottom}
+.sig-space{font-family:Arial,sans-serif;font-size:8pt;color:#c2c8cf;height:32pt;display:block}
+.sig-line{border-top:1pt solid #0B2545;padding-top:5pt;font-family:Arial,sans-serif;font-size:7.5pt;text-transform:uppercase;letter-spacing:.5pt;color:#5a6472}
+.footer-note{margin-top:16pt;font-family:Arial,sans-serif;font-size:6.5pt;color:#9099a3;text-align:center;border-top:1pt solid #eee;padding-top:6pt}
+</style></head><body>
+
+<table class="doc-header"><tr>
+<td style="width:60px"><img src="data:image/png;base64,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" style="width:48px;height:auto"></td>
+<td style="text-align:center">
+  <div class="htitle">CAPITANERIA DI PORTO — GUARDIA COSTIERA</div>
+  <div class="hsub">Sezione ${esc(d.vsez)||'Olbia'} · Mezzo ${esc(d.vmez)||'—'}</div>
+</td>
+<td style="width:110px"></td>
+</tr></table>
+
+<div class="title-band">
+  <div class="kicker">Bollino blu</div>
+  <h1>Verbale delle operazioni compiute</h1>
+  <div class="lawref">Accertamento preventivo delle condizioni di sicurezza di unità da diporto — Art. 26-bis comma 2 D.Lgs. 171/2005</div>
+  <div class="title-rule"></div>
+</div>
+
+<table class="meta-strip"><tr>
+<td><span class="k">Data</span><span class="v">${esc(d.vdat)}</span></td>
+<td><span class="k">Ora</span><span class="v">${esc(d.vora)}</span></td>
+<td><span class="k">Acque/Ormeggio</span><span class="v">${esc(d.vloc)}</span></td>
+<td><span class="k">Coordinate</span><span class="v">${esc(d.vlat)} / ${esc(d.vlon)}</span></td>
+</tr></table>
+
+<p style="font-size:10pt;line-height:1.5">I sottoscritti verbalizzanti, <b>${esc(d.vvrb)}</b>, appartenenti all'Ufficio in intestazione, hanno proceduto al controllo della seguente unità da diporto.</p>
+
+<div class="card">
+<div class="card-head">Unità da diporto</div>
+<table class="fgrid">
+<tr>
+<td colspan="2"><span class="fk">Tipo unità</span><span class="fv">${esc(d.bltipo)}</span></td>
+<td colspan="2"><span class="fk">Sigla di individuazione</span><span class="fv">${esc(d.blsigla)}</span></td>
+</tr>
+<tr>
+<td><span class="fk">Marca/Modello</span><span class="fv">${esc(d.blmarca)}</span></td>
+<td><span class="fk">Lunghezza f.t.</span><span class="fv">${esc(d.bllft)}</span></td>
+<td colspan="2"><span class="fk">Destinazione</span><span class="fv">${esc(d.bldest)}</span></td>
+</tr>
+<tr>
+<td><span class="fk">Motore marca</span><span class="fv">${esc(d.blmotmarca)}</span></td>
+<td><span class="fk">Hp/Cv</span><span class="fv">${esc(d.blmothp)}</span></td>
+<td colspan="2"><span class="fk">Matricola motore</span><span class="fv">${esc(d.blmotmat)}</span></td>
+</tr>
+</table>
+</div>
+
+<div class="card">
+<div class="card-head">Proprietario e conducente</div>
+<table class="fgrid">
+<tr>
+<td colspan="4"><span class="fk">Proprietario/Armatore</span><span class="fv">${esc(d.blprop)}</span></td>
+</tr>
+<tr>
+<td colspan="2"><span class="fk">Al comando/condotta da</span><span class="fv">${esc(d.blcond)}</span></td>
+<td colspan="2"><span class="fk">Generalità</span><span class="fv">${esc(d.blgen)}</span></td>
+</tr>
+<tr>
+<td colspan="2"><span class="fk">Telefono/e-mail</span><span class="fv">${esc(d.bltel)}</span></td>
+<td colspan="2"></td>
+</tr>
+</table>
+</div>
+
+<div class="card">
+<div class="card-head">Documenti</div>
+<table class="fgrid">
+<tr>
+<td><span class="fk">Documento tipo</span><span class="fv">${esc(d.bldoctipo)}</span></td>
+<td><span class="fk">Numero</span><span class="fv">${esc(d.bldocnum)}</span></td>
+<td><span class="fk">Rilasciato</span><span class="fv">${esc(d.bldocril)} da ${esc(d.bldocda)}</span></td>
+<td><span class="fk">Scadenza</span><span class="fv">${esc(d.bldocscad)}</span></td>
+</tr>
+<tr>
+<td><span class="fk">Patente nautica n.</span><span class="fv">${esc(d.blpatnum)}</span></td>
+<td colspan="2"><span class="fk">Rilasciata</span><span class="fv">${esc(d.blpatril)} da ${esc(d.blpatda)}</span></td>
+<td><span class="fk">Scadenza</span><span class="fv">${esc(d.blpatscad)}</span></td>
+</tr>
+</table>
+</div>
+
+<div class="checks">
+${chk(true)} Distanza dalla costa: <b>${esc(d.bldistcosta)||'—'}</b><br>
+${chk(d.blchkdoc)} Regolare tenuta della documentazione di bordo in corso di validità<br>
+${chk(d.blchksic)} Presenza dei mezzi di salvataggio e dotazioni di sicurezza in relazione alla navigazione effettuata
+</div>
+
+<p style="font-size:8.5pt;font-family:Arial,sans-serif;color:#5a6472;line-height:1.5">È cura dell'armatore/proprietario mantenere l'unità in buone condizioni d'uso e provvedere alla manutenzione di scafo, apparato motore, impianto elettrico e protezione antincendio, nonché mantenere in corso di validità documentazione e certificazioni di bordo. È responsabilità dell'armatore/proprietario applicare il Bollino Blu su zona ben visibile dell'unità.</p>
+
+${d.blnote?`<p style="font-size:9.5pt"><b>Annotazioni:</b> ${esc(d.blnote)}</p>`:''}
+
+<div class="esito ${d.blesito==='Irregolarità'?'irr':''}">
+${d.blesito==='Irregolarità'
+  ? '<b>⚠ Irregolarità riscontrate</b> — Bollino non rilasciato in attesa di regolarizzazione.'
+  : `<b>✓ Regolare</b> — Rilasciato bollino autoadesivo per l'anno in corso N° <b>${esc(d.blbollino)||'____'}</b>, posto su zona ben visibile dell'unità, ai fini dell'applicazione della Direttiva n. 103/2026.`}
+</div>
+
+<p style="font-size:8pt;font-family:Arial,sans-serif;color:#5a6472">Il presente verbale deve essere custodito a bordo in originale per essere esibito a richiesta degli organi di controllo.</p>
+
+<table class="sig-row"><tr>
+<td>${sigCellB(1)}<div class="sig-line">La parte</div></td>
+<td>${sigCellB(2)}<div class="sig-line">I verbalizzanti</div></td>
+</tr></table>
+
+<div class="footer-note">
+Capitaneria di Porto Olbia — Battello GC A11 — Art. 26-bis comma 2 D.Lgs. 18 luglio 2005 n. 171
+</div>
+
+</body></html>`;
+}
+
+function dlWordBollino(){
+  const d=getDataBollino();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+buildDocBollino(d)],{type:'application/msword'}));
+  a.download='BOLLINO_'+(d.blprop||'verbale')+'_'+new Date().toISOString().slice(0,10)+'.doc';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  clearDraft();
+}
+
+function dlPDFBollino(){
+  const d=getDataBollino();
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=()=>{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const ML=14,MR=14,PW=210,col=PW-ML-MR;
+    let y=14;
+    const navy=[11,37,69], blue=[43,124,181], gray=[90,100,114], line=[221,227,232];
+    const nl=(h=5)=>{y+=h;if(y>272){doc.addPage();y=14;}};
+    const setC=(rgb)=>doc.setTextColor(rgb[0],rgb[1],rgb[2]);
+    const resetC=()=>doc.setTextColor(26,35,50);
+
+    try{ doc.addImage('data:image/png;base64,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','PNG',ML,y,13,14.5); }catch(e){}
+    doc.setFont('helvetica','bold');doc.setFontSize(11);setC(navy);
+    doc.text('CAPITANERIA DI PORTO — GUARDIA COSTIERA',PW/2,y+5,{align:'center'});
+    doc.setFont('helvetica','italic');doc.setFontSize(8);setC(gray);
+    doc.text('Sezione '+(d.vsez||'Olbia')+' · Mezzo '+(d.vmez||'—'),PW/2,y+9.5,{align:'center'});
+    resetC();
+    nl(17);
+    doc.setDrawColor(navy[0],navy[1],navy[2]);doc.setLineWidth(0.8);
+    doc.line(ML,y,PW-MR,y);
+    nl(6);
+
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);setC(blue);
+    doc.text('BOLLINO BLU',PW/2,y,{align:'center',charSpace:0.6});
+    resetC();nl(5);
+    doc.setFont('helvetica','bold');doc.setFontSize(12.5);setC(navy);
+    doc.text('Verbale delle operazioni compiute',PW/2,y,{align:'center'});
+    resetC();nl(4);
+    doc.setFont('helvetica','italic');doc.setFontSize(7.5);setC(gray);
+    const lawLines=doc.splitTextToSize("Accertamento preventivo delle condizioni di sicurezza di unità da diporto — Art. 26-bis comma 2 D.Lgs. 171/2005",col*0.8);
+    doc.text(lawLines,PW/2,y,{align:'center'});
+    resetC();nl(lawLines.length*3.5+4);
+    doc.setDrawColor(blue[0],blue[1],blue[2]);doc.setLineWidth(0.6);
+    doc.line(PW/2-32,y,PW/2+32,y);
+    nl(7);
+
+    doc.setFillColor(244,246,248);
+    doc.rect(ML,y,col,11,'F');
+    const metaCols=[['DATA',d.vdat],['ORA',d.vora],['ACQUE/ORMEGGIO',d.vloc],['COORD.',(d.vlat||'')+' / '+(d.vlon||'')]];
+    const mcw=col/4;
+    metaCols.forEach(([k,v],i)=>{
+      doc.setFont('helvetica','normal');doc.setFontSize(6);setC(gray);
+      doc.text(k,ML+mcw*i+3,y+4);
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);setC(navy);
+      doc.text(String(v||'—'),ML+mcw*i+3,y+8,{maxWidth:mcw-5});
+      resetC();
+    });
+    nl(15);
+
+    doc.setFont('times','normal');doc.setFontSize(9.5);setC([26,35,50]);
+    const narrative=`I sottoscritti verbalizzanti, ${d.vvrb||'___'}, appartenenti all'Ufficio in intestazione, hanno proceduto al controllo della seguente unità da diporto.`;
+    const nLines=doc.splitTextToSize(narrative,col);
+    doc.text(nLines,ML,y);
+    nl(nLines.length*4.4+4);
+
+    function cardHeader(title,h=6){
+      doc.setFillColor(navy[0],navy[1],navy[2]);
+      doc.rect(ML,y,col,h,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(255,255,255);
+      doc.text(title.toUpperCase(),ML+3,y+h/2+1.2,{charSpace:0.4});
+      resetC();
+      nl(h);
+    }
+    function cardField(x,w,label,value){
+      doc.setFont('helvetica','normal');doc.setFontSize(5.8);setC(gray);
+      doc.text(label.toUpperCase(),x,y+3.5);
+      doc.setFont('times','bold');doc.setFontSize(8.5);setC([26,35,50]);
+      const lines=doc.splitTextToSize(String(value||'—'),w-3);
+      doc.text(lines,x,y+7.5);
+      resetC();
+    }
+    doc.setDrawColor(line[0],line[1],line[2]);doc.setLineWidth(0.3);
+    const q1=col/4;
+
+    let cardY=y;
+    cardHeader('Unità da diporto');
+    cardField(ML+2,q1*2,'Tipo unità',d.bltipo);
+    cardField(ML+q1*2+2,q1*2,'Sigla di individuazione',d.blsigla);
+    nl(12);
+    cardField(ML+2,q1,'Marca/Modello',d.blmarca);
+    cardField(ML+q1+2,q1,'Lunghezza f.t.',d.bllft);
+    cardField(ML+q1*2+2,q1*2,'Destinazione',d.bldest);
+    nl(12);
+    cardField(ML+2,q1,'Motore marca',d.blmotmarca);
+    cardField(ML+q1+2,q1,'Hp/Cv',d.blmothp);
+    cardField(ML+q1*2+2,q1*2,'Matricola motore',d.blmotmat);
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(4);
+
+    cardY=y;
+    cardHeader('Proprietario e conducente');
+    cardField(ML+2,col-4,'Proprietario/Armatore',d.blprop);
+    nl(12);
+    cardField(ML+2,q1*2,'Al comando/condotta da',d.blcond);
+    cardField(ML+q1*2+2,q1*2,'Generalità',d.blgen);
+    nl(12);
+    cardField(ML+2,col-4,'Telefono/e-mail',d.bltel);
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(4);
+
+    cardY=y;
+    cardHeader('Documenti');
+    cardField(ML+2,q1,'Doc. tipo',d.bldoctipo);
+    cardField(ML+q1+2,q1,'Numero',d.bldocnum);
+    cardField(ML+q1*2+2,q1,'Rilasciato',(d.bldocril||'')+' da '+(d.bldocda||''));
+    cardField(ML+q1*3+2,q1,'Scadenza',d.bldocscad);
+    nl(12);
+    cardField(ML+2,q1,'Patente naut. n.',d.blpatnum);
+    cardField(ML+q1+2,q1*2,'Rilasciata',(d.blpatril||'')+' da '+(d.blpatda||''));
+    cardField(ML+q1*3+2,q1,'Scadenza',d.blpatscad);
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(4);
+
+    // Controlli
+    cardY=y;
+    doc.setDrawColor(line[0],line[1],line[2]);
+    doc.rect(ML,y,col,20,'S');
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);setC([26,35,50]);
+    doc.text('☑ Distanza dalla costa: '+(d.bldistcosta||'—'),ML+3,y+5);
+    doc.text((d.blchkdoc?'☑':'☐')+' Regolare tenuta della documentazione di bordo',ML+3,y+11);
+    doc.text((d.blchksic?'☑':'☐')+' Presenza mezzi di salvataggio e dotazioni di sicurezza',ML+3,y+17);
+    resetC();
+    nl(24);
+
+    if(d.blnote){
+      doc.setFont('times','italic');doc.setFontSize(8.5);setC([26,35,50]);
+      const noteLines=doc.splitTextToSize('Annotazioni: '+d.blnote,col);
+      doc.text(noteLines,ML,y);
+      resetC();
+      nl(noteLines.length*4+3);
+    }
+
+    if(y>230){doc.addPage();y=14;}
+
+    // Esito
+    cardY=y;
+    const isReg = d.blesito!=='Irregolarità';
+    const esitoColor = isReg?[234,243,222]:[252,235,235];
+    const esitoBorder = isReg?[99,153,34]:[226,75,74];
+    doc.setFillColor(esitoColor[0],esitoColor[1],esitoColor[2]);
+    doc.setDrawColor(esitoBorder[0],esitoBorder[1],esitoBorder[2]);doc.setLineWidth(0.3);
+    const esitoH=14;
+    doc.rect(ML,y,col,esitoH,'FD');
+    doc.setFillColor(esitoBorder[0],esitoBorder[1],esitoBorder[2]);
+    doc.rect(ML,y,1.3,esitoH,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);setC([40,40,40]);
+    const esitoText = isReg
+      ? "Regolare — Rilasciato bollino N° "+(d.blbollino||'____')+" per l'anno in corso, ai fini della Direttiva n. 103/2026."
+      : "Irregolarità riscontrate — Bollino non rilasciato in attesa di regolarizzazione.";
+    const esitoLines=doc.splitTextToSize(esitoText,col-8);
+    doc.text(esitoLines,ML+5,y+6);
+    resetC();
+    nl(esitoH+8);
+
+    // Firme
+    const fw=col/2;
+    ['LA PARTE','I VERBALIZZANTI'].forEach((l,i)=>{
+      const u=getSigB(i+1);
+      if(u){try{doc.addImage(u,'PNG',ML+fw*i+fw/2-18,y,36,14);}catch(e){}}
+      doc.setDrawColor(navy[0],navy[1],navy[2]);doc.setLineWidth(0.4);
+      doc.line(ML+fw*i+10,y+16,ML+fw*(i+1)-10,y+16);
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);setC(gray);
+      doc.text(l,ML+fw*i+fw/2,y+19.5,{align:'center',charSpace:0.3});
+      resetC();
+    });
+    nl(26);
+
+    doc.setDrawColor(line[0],line[1],line[2]);doc.setLineWidth(0.2);
+    doc.line(ML,y,PW-MR,y);
+    nl(4);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);setC(gray);
+    doc.text('Capitaneria di Porto Olbia — Battello GC A11 — Art. 26-bis comma 2 D.Lgs. 18 luglio 2005 n. 171',PW/2,y,{align:'center'});
+    resetC();
+
+    doc.save('BOLLINO_'+(d.blprop||'verbale')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+    clearDraft();
+  };
+  s.onerror=()=>alert('Errore caricamento libreria PDF. Controlla la connessione internet.');
+  document.head.appendChild(s);
+}
+
+function resetAllBollino(){
+  document.querySelectorAll('#b10 .fi, #b11 .fi').forEach(e=>{e.value='';e.classList.remove('ok');});
+  document.querySelectorAll('#b10 input[type=radio], #b11 input[type=radio], #b11 input[type=checkbox]').forEach(e=>e.checked=false);
+  const esitoRadio=document.querySelector('input[name=blesito][value=Regolare]'); if(esitoRadio) esitoRadio.checked=true;
+  ['p1a','p1b','p2a','p2b'].forEach(n=>{
+    delete imgsBollino[n];
+    const pv=document.getElementById('pv_'+n), uz=document.getElementById('uz_'+n), fi=document.getElementById('fi_'+n);
+    if(pv) pv.style.display='none';
+    if(uz) uz.style.display='block';
+    if(fi) fi.value='';
+  });
+  ['p1','p2'].forEach(slot=>{
+    const em=document.getElementById('em_'+slot); if(em) em.style.display='none';
+  });
+  clrSigB(1); clrSigB(2);
+  const c1=document.getElementById('scb1'); if(c1)c1._init=false;
+  const c2=document.getElementById('scb2'); if(c2)c2._init=false;
+  clearDraft();
+  goTo(0);
+}
+
+// ═══════════════════════════════════════════════════════════
 // DOWNLOAD
 // ═══════════════════════════════════════════════════════════
 function dlWord(){
@@ -1231,6 +2136,7 @@ function dlWord(){
   a.href=URL.createObjectURL(new Blob(['\ufeff'+buildDoc(d)],{type:'application/msword'}));
   a.download='PV_'+(d.tcog||'verbale')+'_'+new Date().toISOString().slice(0,10)+'.doc';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
+  clearDraft();
 }
 
 function dlPDF(){
@@ -1242,73 +2148,205 @@ function dlPDF(){
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const ML=14,MR=14,PW=210,col=PW-ML-MR;
     let y=14;
-    const nl=(h=5)=>{y+=h;if(y>278){doc.addPage();y=14;}};
-    const wr=(t,x,s=9,b=false,mx=col)=>{doc.setFont('helvetica',b?'bold':'normal');doc.setFontSize(s);const lines=doc.splitTextToSize(String(t||''),mx-(x-ML));doc.text(lines,x,y);return lines.length*4.5;};
-    const tx=(t,x=ML,s=9,b=false)=>{const h=wr(t,x,s,b);nl(h);};
+    const navy=[11,37,69], gold=[201,168,76], goldD=[138,92,0], gray=[90,100,114], line=[221,227,232], cream=[253,248,236];
+    const nl=(h=5)=>{y+=h;if(y>272){doc.addPage();y=14;}};
+    const setC=(rgb)=>doc.setTextColor(rgb[0],rgb[1],rgb[2]);
+    const resetC=()=>doc.setTextColor(26,35,50);
 
-    // Logo Repubblica Italiana centrato in alto
-    try{
-      const logoW=16, logoH=18;
-      doc.addImage('data:image/png;base64,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','PNG',(PW-logoW)/2,y,logoW,logoH);
-      nl(logoH+2);
-    }catch(e){}
+    // ── HEADER: logo + titolo istituzione + box P.V. ──
+    try{ doc.addImage('data:image/png;base64,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','PNG',ML,y,13,14.5); }catch(e){}
+    doc.setFont('helvetica','bold');doc.setFontSize(11);setC(navy);
+    doc.text('CAPITANERIA DI PORTO — GUARDIA COSTIERA',PW/2,y+5,{align:'center'});
+    doc.setFont('helvetica','italic');doc.setFontSize(8);setC(gray);
+    doc.text('Sezione '+(d.vsez||'Olbia')+' · Mezzo '+(d.vmez||'—'),PW/2,y+9.5,{align:'center'});
+    doc.setDrawColor(navy[0],navy[1],navy[2]);doc.setLineWidth(1);
+    doc.roundedRect(PW-MR-32,y,32,13,1,1);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);setC(gray);
+    doc.text('P.V. N°',PW-MR-16,y+4.5,{align:'center'});
+    doc.setFont('helvetica','bold');doc.setFontSize(11);setC(navy);
+    doc.text(d.pvnum||'______/20__',PW-MR-16,y+9.5,{align:'center'});
+    resetC();
+    nl(17);
+    doc.setDrawColor(navy[0],navy[1],navy[2]);doc.setLineWidth(0.8);
+    doc.line(ML,y,PW-MR,y);
+    nl(6);
 
-    doc.setFont('helvetica','bold');doc.setFontSize(12);
-    doc.text('CAPITANERIA DI PORTO — GUARDIA COSTIERA OLBIA',PW/2,y,{align:'center'});nl(5);
-    doc.text('PROCESSO VERBALE DI ACCERTATA VIOLAZIONE AMMINISTRATIVA',PW/2,y,{align:'center'});nl(5);
-    doc.setFont('helvetica','normal');doc.setFontSize(8);
-    doc.text(`SEZ: ${d.vsez||'___'}  MEZZO: ${d.vmez||'___'}  P.V. n° ${d.pvnum||'______/20___'}`,ML,y);nl(4);
-    doc.line(ML,y,PW-MR,y);nl(5);
+    // ── TITOLO ──
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);setC(goldD);
+    doc.text('VERBALE UFFICIALE',PW/2,y,{align:'center',charSpace:0.6});
+    resetC();nl(5);
+    doc.setFont('helvetica','bold');doc.setFontSize(13);setC(navy);
+    doc.text('Processo verbale di accertata violazione amministrativa',PW/2,y,{align:'center'});
+    resetC();nl(3);
+    doc.setDrawColor(gold[0],gold[1],gold[2]);doc.setLineWidth(0.6);
+    doc.line(PW/2-32,y,PW/2+32,y);
+    nl(7);
 
-    doc.setFontSize(9);
-    tx(`Il giorno ${d.vdat||'__/__/____'} alle ore ${d.vora||'_____'} i sottoscritti verbalizzanti: ${d.vvrb||'___'} in località ${d.vloc||'___'} (Lat. ${d.vlat||'___'} N — Long. ${d.vlon||'___'} E), HANNO ACCERTATO che:`);nl(2);
-    tx(`Sig. ${d.tcog||''} ${d.tnom||''} nato a ${d.tnata||'___'} il ${d.tnatd||'___'} residente in ${d.tres||'___'} Via ${d.tvia||'___'} n.${d.tciv||'_'} in qualità di ${d.tqua||'___'} — C.F. ${d.tcf||'___'} identificato con: ${d.tdoc||'___'} n.${d.tdnum||'___'} ril.il ${d.tdil||'___'} da ${d.tdda||'___'} CON IL SEGUENTE MEZZO:`);nl(3);
+    // ── META STRIP ──
+    doc.setFillColor(244,246,248);
+    doc.rect(ML,y,col,11,'F');
+    const metaCols=[['DATA',d.vdat],['ORA',d.vora],['LOCALITÀ',d.vloc],['COORD.',(d.vlat||'')+' / '+(d.vlon||'')]];
+    const mcw=col/4;
+    metaCols.forEach(([k,v],i)=>{
+      doc.setFont('helvetica','normal');doc.setFontSize(6);setC(gray);
+      doc.text(k,ML+mcw*i+3,y+4);
+      doc.setFont('helvetica','bold');doc.setFontSize(9);setC(navy);
+      doc.text(String(v||'—'),ML+mcw*i+3,y+8,{maxWidth:mcw-5});
+      resetC();
+    });
+    nl(15);
 
-    doc.setFillColor(220,230,241);doc.rect(ML,y,col,6,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('MEZZO NAUTICO',ML+2,y+4.2);nl(7);
-    doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-    const cw=col/4;
-    [[d.ntar,'Targa'],[d.nnom,'Nome'],[d.nmar,'Marca/Mod.'],[d.nsta,'Stazza']].forEach(([v,l],i)=>{
-      doc.rect(ML+cw*i,y,cw,10);doc.setFont('helvetica','bold');doc.text(l,ML+cw*i+1,y+3.5);
-      doc.setFont('helvetica','normal');doc.text(String(v||''),ML+cw*i+1,y+7.5,{maxWidth:cw-2});
-    });nl(11);
-    [[d.nnmot,'N.Mot'],[d.nmot,'Tipo'],[d.nmmot,'Marca mot.'],[d.nmat,'Matricola']].forEach(([v,l],i)=>{
-      doc.rect(ML+cw*i,y,cw,10);doc.setFont('helvetica','bold');doc.text(l,ML+cw*i+1,y+3.5);
-      doc.setFont('helvetica','normal');doc.text(String(v||''),ML+cw*i+1,y+7.5,{maxWidth:cw-2});
-    });nl(13);
+    // ── NARRATIVA ──
+    doc.setFont('times','normal');doc.setFontSize(10);setC([26,35,50]);
+    const narrative=`I sottoscritti verbalizzanti, ${d.vvrb||'___'}, in servizio di vigilanza costiera, hanno accertato quanto segue nei confronti del Sig. ${d.tcog||''} ${d.tnom||''}, identificato mediante ${d.tdoc||'documento'} n. ${d.tdnum||'___'}, rilasciato il ${d.tdil||'___'} da ${d.tdda||'___'}.`;
+    const nLines=doc.splitTextToSize(narrative,col);
+    doc.text(nLines,ML,y);
+    nl(nLines.length*4.6+4);
 
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Descrizione dei fatti:',ML,y);nl(5);
-    doc.rect(ML,y,col,32);
-    if(d.vfat){doc.setFont('helvetica','normal');doc.setFontSize(8.5);const fl=doc.splitTextToSize(d.vfat,col-4);doc.text(fl,ML+2,y+4);}
-    nl(34);
+    // ── CARD helper ──
+    function cardHeader(title,h=6){
+      doc.setFillColor(navy[0],navy[1],navy[2]);
+      doc.rect(ML,y,col,h,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(255,255,255);
+      doc.text(title.toUpperCase(),ML+3,y+h/2+1.2,{charSpace:0.4});
+      resetC();
+      nl(h);
+    }
+    function cardField(x,w,label,value){
+      doc.setFont('helvetica','normal');doc.setFontSize(5.8);setC(gray);
+      doc.text(label.toUpperCase(),x,y+3.5);
+      doc.setFont('times','bold');doc.setFontSize(9);setC([26,35,50]);
+      const lines=doc.splitTextToSize(String(value||'—'),w-3);
+      doc.text(lines,x,y+7.5);
+      resetC();
+    }
 
-    doc.setFont('helvetica','normal');doc.setFontSize(9);
-    tx(`Violazione: ${d.vnor||'___'} — punita dall'art.: ${d.vpun||'___'}`);nl(2);
-    tx(`Obbligato in solido (${d.oq||'___'}): ${d.ocog||''} ${d.onom||''} nato a ${d.onata||'___'} il ${d.onatd||'___'} res. ${d.ores||'___'} Via ${d.ovia||'___'} n.${d.ociv||'_'} P.IVA ${d.opiv||'___'} n.doc. ${d.odnum||'___'}`);nl(2);
-    tx(`Il Trasgressore DICHIARA: ${d.vdic||'"NULLA."'}`);nl(5);
+    // ── CARD TRASGRESSORE ──
+    doc.setDrawColor(line[0],line[1],line[2]);doc.setLineWidth(0.3);
+    let cardY=y;
+    cardHeader('Trasgressore');
+    const q1=col/4;
+    cardField(ML+2,q1,'Cognome e nome',(d.tcog||'')+' '+(d.tnom||''));
+    cardField(ML+q1+2,q1,'Nato a',d.tnata);
+    cardField(ML+q1*2+2,q1,'Il',d.tnatd);
+    cardField(ML+q1*3+2,q1,'Cod. fiscale',d.tcf);
+    nl(12);
+    cardField(ML+2,q1*2,'Residenza',(d.tres||'')+' — Via '+(d.tvia||'')+' n.'+(d.tciv||''));
+    cardField(ML+q1*2+2,q1,'Qualità',d.tqua);
+    cardField(ML+q1*3+2,q1,'Documento',(d.tdoc||'')+' n.'+(d.tdnum||''));
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(4);
+
+    // ── CARD MEZZO NAUTICO ──
+    cardY=y;
+    cardHeader('Mezzo nautico');
+    cardField(ML+2,q1,'Targa',d.ntar);
+    cardField(ML+q1+2,q1,'Nome natante',d.nnom);
+    cardField(ML+q1*2+2,q1,'Marca/Modello',d.nmar);
+    cardField(ML+q1*3+2,q1,'Stazza',d.nsta);
+    nl(12);
+    cardField(ML+2,q1,'Motore',(d.nmmot||'')+' — '+(d.nmot||''));
+    cardField(ML+q1+2,q1,'Matricola',d.nmat);
+    cardField(ML+q1*2+2,q1,'Potenza',(d.npot||'')+' CV');
+    cardField(ML+q1*3+2,q1,'Porto',d.npor);
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(4);
+
+    // ── DESCRIZIONE FATTI ──
+    cardY=y;
+    doc.setFont('helvetica','normal');doc.setFontSize(6);setC(gray);
+    doc.text('DESCRIZIONE DEI FATTI',ML+3,y+4);
+    resetC();
+    doc.setFont('times','normal');doc.setFontSize(9.5);setC([26,35,50]);
+    const factLines=doc.splitTextToSize(d.vfat||' ',col-6);
+    doc.text(factLines,ML+3,y+9);
+    resetC();
+    const factH=Math.max(16,factLines.length*4.3+9);
+    doc.setFillColor(251,251,250);
+    doc.rect(ML,cardY,col,factH,'S');
+    nl(factH+4);
 
     if(y>230){doc.addPage();y=14;}
-    const fw=col/3;
-    ['IL TRASGRESSORE',"L'OBBLIGATO",'I VERBALIZZANTI'].forEach((l,i)=>{
-      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(l,ML+fw*i+fw/2,y,{align:'center'});
-    });nl(5);
-    [1,2,3].forEach((n,i)=>{
-      const u=getSig(n);
-      if(u){try{doc.addImage(u,'PNG',ML+fw*i+2,y,fw-4,18);}catch(e){doc.line(ML+fw*i+5,y+18,ML+fw*i+fw-5,y+18);}}
-      else{doc.line(ML+fw*i+5,y+18,ML+fw*i+fw-5,y+18);}
-      if(n===3){const u4=getSig(4);if(u4){try{doc.addImage(u4,'PNG',ML+fw*i+2,y+20,fw-4,18);}catch(e){doc.line(ML+fw*i+5,y+38,ML+fw*i+fw-5,y+38);}}else doc.line(ML+fw*i+5,y+38,ML+fw*i+fw-5,y+38);}
-    });nl(48);
 
-    doc.line(ML,y,PW-MR,y);nl(4);
-    doc.setFont('helvetica','bold');doc.setFontSize(9);
-    tx(`Sanzione da € ${d.vmin||'___'},— a € ${d.vmax||'___'},—`);
-    tx(`Pagamento ridotto entro 60 gg: € ${d.vrid||'___'},—`);
-    if(d.vr30&&d.vr30!=='—')tx(`Riduzione 30% entro 5 gg: € ${d.vr30},—`);
-    tx(`Pagamento: ${d.vpag||'F23'} — Scritti difensivi a: ${d.vdif||'CP Olbia'}`);
-    doc.setFont('helvetica','normal');doc.setFontSize(7.5);
-    tx('fax 0789/22308 — contenzioso.cpolbia@mit.gov.it — Consegnare modello F23 precompilato.');
+    // ── CARD OBBLIGATO ──
+    cardY=y;
+    cardHeader('Obbligato in solido');
+    cardField(ML+2,q1*2,'Cognome/Ragione sociale e nome',(d.ocog||'')+' '+(d.onom||''));
+    cardField(ML+q1*2+2,q1,'Qualità',d.oq);
+    cardField(ML+q1*3+2,q1,'P.IVA',d.opiv);
+    nl(12);
+    cardField(ML+2,q1*2,'Residenza/Sede',(d.ores||'')+' — Via '+(d.ovia||'')+' n.'+(d.ociv||''));
+    cardField(ML+q1*2+2,q1*2,'Documento',(d.odnum?'n.'+d.odnum:'')+' ril. '+(d.odil||'')+' da '+(d.odda||''));
+    nl(10);
+    doc.rect(ML,cardY,col,y-cardY,'S');
+    nl(5);
+
+    // ── DICHIARAZIONE ──
+    doc.setFont('times','normal');doc.setFontSize(8.5);setC([26,35,50]);
+    const dicLines=doc.splitTextToSize('Il Trasgressore DICHIARA: '+(d.vdic||'"NULLA."'),col);
+    doc.text(dicLines,ML,y);
+    nl(dicLines.length*4+2);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);setC(gray);
+    doc.text("Copia consegnata al trasgressore ([ ] accetta [ ] rifiuta) e all'obbligato in solido ([ ] accetta [ ] rifiuta).",ML,y);
+    resetC();
+    nl(9);
+
+    if(y>225){doc.addPage();y=14;}
+
+    // ── FIRME ──
+    const fw=col/3;
+    ['IL TRASGRESSORE',"L'OBBLIGATO IN SOLIDO",'I VERBALIZZANTI'].forEach((l,i)=>{
+      const sigs = i===0?[1] : i===1?[2] : [3,4];
+      let sy=y;
+      sigs.forEach((n,j)=>{
+        const u=getSig(n);
+        if(u){try{doc.addImage(u,'PNG',ML+fw*i+fw/2-18,sy,36,14);}catch(e){}}
+        sy+=15;
+      });
+      doc.setDrawColor(navy[0],navy[1],navy[2]);doc.setLineWidth(0.4);
+      doc.line(ML+fw*i+6,sy,ML+fw*(i+1)-6,sy);
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);setC(gray);
+      doc.text(l,ML+fw*i+fw/2,sy+3.5,{align:'center',charSpace:0.3});
+      resetC();
+    });
+    nl(38);
+
+    if(y>250){doc.addPage();y=14;}
+
+    // ── SANZIONE ──
+    cardY=y;
+    doc.setFillColor(cream[0],cream[1],cream[2]);
+    doc.setDrawColor(gold[0],gold[1],gold[2]);doc.setLineWidth(0.3);
+    const sancH = (d.vr30&&d.vr30!=='—') ? 24 : 19;
+    doc.rect(ML,y,col,sancH,'FD');
+    doc.setFillColor(gold[0],gold[1],gold[2]);
+    doc.rect(ML,y,1.3,sancH,'F');
+    let sy=y+5;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);setC([74,58,16]);
+    doc.text('Norma violata: '+(d.vnor||'—')+'  —  Punita da: '+(d.vpun||'—'),ML+5,sy);
+    sy+=5;
+    doc.text('Sanzione da € '+(d.vmin||'—')+' a € '+(d.vmax||'—')+'  —  pagamento ridotto € '+(d.vrid||'—'),ML+5,sy);
+    sy+=5;
+    if(d.vr30&&d.vr30!=='—'){
+      doc.text('Riduzione 30% entro 5 giorni: € '+d.vr30,ML+5,sy);
+      sy+=5;
+    }
+    doc.text('Pagamento tramite '+(d.vpag||'F23')+'  —  scritti difensivi a '+(d.vdif||'CP Olbia'),ML+5,sy);
+    resetC();
+    nl(sancH+6);
+
+    // ── FOOTER ──
+    doc.setDrawColor(line[0],line[1],line[2]);doc.setLineWidth(0.2);
+    doc.line(ML,y,PW-MR,y);
+    nl(4);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);setC(gray);
+    doc.text("Sanzione ai sensi dell'art. 16 Legge 689/81 — Sportelli riscossione tributi competente — fax 0789/22308 — contenzioso.cpolbia@mit.gov.it",PW/2,y,{align:'center'});
+    resetC();
 
     doc.save('PV_'+(d.tcog||'verbale')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+    clearDraft();
   };
   s.onerror=()=>alert('Errore caricamento libreria PDF. Controlla la connessione internet.');
   document.head.appendChild(s);
@@ -1352,6 +2390,7 @@ function resetAll(){
   const vl=document.getElementById('vlist');
   vl.querySelectorAll('[id^="vr"]').forEach(r=>{if(r.id!=='vr1'&&r.id!=='vr2')r.remove();});
   document.getElementById('vi2').value='';
+  clearDraft();
   goTo(0);
 }
 
@@ -1456,6 +2495,115 @@ function toggleMic(fieldId, btnId) {
 
   r.start();
 }
+
+// ═══════════════════════════════════════════════════════════
+// SALVATAGGIO AUTOMATICO BOZZA (previene perdita dati)
+// ═══════════════════════════════════════════════════════════
+const DRAFT_KEY = 'cp_verbale_draft';
+let draftSaveTimer = null;
+
+function collectDraftData() {
+  const data = {};
+  document.querySelectorAll('input.fi, select.fi, textarea.fi').forEach(el => {
+    if (el.id) data[el.id] = el.value;
+  });
+  document.querySelectorAll('input[type=radio]:checked, input[type=checkbox]').forEach(el => {
+    if (el.id) data['__' + el.id] = el.checked;
+  });
+  // Verbalizzanti dinamici
+  const verbs = {};
+  document.querySelectorAll('[id^="vi"]').forEach(el => { verbs[el.id] = el.value; });
+  data.__verbs = verbs;
+  data.__vcnt = vcnt;
+  data.__gpsLoc = gpsLoc; data.__gpsLat = gpsLat; data.__gpsLon = gpsLon;
+  data.__appMode = appMode;
+  data.__savedAt = new Date().toISOString();
+  return data;
+}
+
+function saveDraft() {
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(() => {
+    try {
+      const data = collectDraftData();
+      const json = JSON.stringify(data);
+      try { localStorage.setItem(DRAFT_KEY, json); } catch(e) {}
+      try { sessionStorage.setItem(DRAFT_KEY, json); } catch(e) {}
+    } catch(e) { console.warn('saveDraft:', e.message); }
+  }, 400);
+}
+
+function loadDraft() {
+  try {
+    let json = null;
+    try { json = localStorage.getItem(DRAFT_KEY); } catch(e) {}
+    if (!json) { try { json = sessionStorage.getItem(DRAFT_KEY); } catch(e) {} }
+    if (!json) return;
+    const data = JSON.parse(json);
+    if (!data || !data.__savedAt) return;
+
+    // Ignora bozze salvate in una modalità diversa da quella attuale
+    if (data.__appMode && data.__appMode !== appMode) return;
+
+    // Se la bozza è vecchia più di 48 ore, non ripristinarla automaticamente
+    const ageMs = Date.now() - new Date(data.__savedAt).getTime();
+    if (ageMs > 48*3600*1000) { clearDraft(); return; }
+
+    // Verifica se ci sono dati significativi da recuperare
+    const hasContent = Object.keys(data).some(k => !k.startsWith('__') && data[k]);
+    if (!hasContent) return;
+
+    if (!confirm('È stata trovata una bozza di verbale non completata (salvata automaticamente). Vuoi recuperarla?')) {
+      clearDraft();
+      return;
+    }
+
+    // Ripristina campi normali
+    Object.keys(data).forEach(id => {
+      if (id.startsWith('__')) return;
+      const el = document.getElementById(id);
+      if (el && data[id]) { el.value = data[id]; el.classList.add('ok'); }
+    });
+    // Ripristina radio/checkbox
+    Object.keys(data).forEach(id => {
+      if (!id.startsWith('__') || id === '__verbs') return;
+      const realId = id.slice(2);
+      const el = document.getElementById(realId);
+      if (el && data[id]) el.checked = true;
+    });
+    // Ripristina verbalizzanti dinamici
+    if (data.__vcnt && data.__vcnt > 2) {
+      for (let i = 3; i <= data.__vcnt; i++) addVerb();
+    }
+    if (data.__verbs) {
+      Object.keys(data.__verbs).forEach(vid => {
+        const el = document.getElementById(vid);
+        if (el) el.value = data.__verbs[vid];
+      });
+    }
+    // Ripristina GPS
+    if (data.__gpsLoc) { gpsLoc = data.__gpsLoc; gpsLat = data.__gpsLat; gpsLon = data.__gpsLon; }
+
+    // Riabilita firme automatiche in base ai dati ripristinati
+    autoEnableSig2();
+    autoEnableSig4();
+  } catch(e) { console.warn('loadDraft:', e.message); }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+  try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
+
+// Salva automaticamente ad ogni modifica di un campo (con debounce)
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.classList && e.target.classList.contains('fi')) saveDraft();
+});
+document.addEventListener('change', (e) => {
+  if (e.target && (e.target.type === 'radio' || e.target.type === 'checkbox')) saveDraft();
+});
+
+// L'app si avvia dalla home tramite startMode()
 </script>
 </body>
 </html>
